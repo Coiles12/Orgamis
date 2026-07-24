@@ -40,3 +40,6 @@ SELECT
 FROM public.availability_slots
 GROUP BY slot_date, time_block
 ORDER BY slot_date, time_block;
+
+-- Ajouter time_block à la table activities
+ALTER TABLE public.activities ADD COLUMN IF NOT EXISTS time_block public.time_block;

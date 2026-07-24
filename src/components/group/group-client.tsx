@@ -60,6 +60,7 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
   const [selectedSlot, setSelectedSlot] = useState<{ date: string; timeBlock: TimeBlock } | null>(null);
   const [slotDetails, setSlotDetails] = useState<Array<{ user_id: string; display_name: string | null; status: "available" | "unsure" | "unavailable" }>>([]);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const [activities, setActivities] = useState<Array<{ id: string; title: string; date: string; time_block: TimeBlock | null; location: string | null }>>([]);
 
   const weekParam = searchParams.get("week");
   const weekStart = useMemo(() => parseWeekStart(weekParam), [weekParam]);
@@ -74,16 +75,22 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
 
       await ensureUserProfile(supabase, userId, userLabel);
 
-      const [profilesResult, availabilityResult] = await Promise.all([
+      const [profilesResult, availabilityResult, activitiesResult] = await Promise.all([
         supabase.from("profiles").select("*", { count: "exact", head: true }),
         supabase
           .from("availability_slots")
           .select("id, user_id, slot_date, time_block, status")
           .gte("slot_date", from)
           .lte("slot_date", to),
+        supabase
+          .from("activities")
+          .select("id, title, date, time_block, location")
+          .gte("date", from)
+          .lte("date", to)
+          .eq("status", "confirmed"),
       ]);
 
-      if (profilesResult.error || availabilityResult.error) {
+      if (profilesResult.error || availabilityResult.error || activitiesResult.error) {
         setIsLoading(false);
         setError("Impossible de charger les disponibilites de la semaine.");
         return;
@@ -100,6 +107,7 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
 
       setGroupCounts(nextGroupCounts);
       setMemberCount(profilesResult.count ?? 0);
+      setActivities(activitiesResult.data ?? []);
       setIsLoading(false);
     },
     [supabase, userId, userLabel],
@@ -138,6 +146,12 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
     setSlotDetails(details);
     setLoadingDetails(false);
   }, [supabase]);
+
+  const getActivitiesForSlot = useCallback((date: string, timeBlock: TimeBlock) => {
+    return activities.filter(
+      (activity) => activity.date === date && activity.time_block === timeBlock
+    );
+  }, [activities]);
 
   const navigateWeek = useCallback(
     (direction: number) => {
@@ -232,6 +246,7 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
                 const count = groupCounts[key] ?? 0;
                 const ratio = memberCount > 0 ? count / memberCount : 0;
                 const isBestSlot = ratio >= 0.75;
+                const slotActivities = getActivitiesForSlot(day.date, block.value);
 
                 return (
                   <div key={key} className="border-r border-zinc-100 p-2 last:border-r-0 dark:border-zinc-700">
@@ -250,6 +265,19 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
                         </span>
                       )}
                     </button>
+                    {slotActivities.length > 0 && (
+                      <div className="mt-1 space-y-1">
+                        {slotActivities.map((activity) => (
+                          <div
+                            key={activity.id}
+                            className="rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-900 dark:bg-blue-900 dark:text-blue-100"
+                            title={activity.location || undefined}
+                          >
+                            {activity.title}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 );
               })}

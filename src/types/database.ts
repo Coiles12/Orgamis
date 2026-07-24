@@ -19,6 +19,7 @@ export type Database = {
           location: string | null;
           max_participants: number | null;
           status: "draft" | "confirmed" | "cancelled";
+          time_block: "morning" | "noon" | "evening" | null;
           title: string;
           updated_at: string;
         };
@@ -31,6 +32,7 @@ export type Database = {
           location?: string | null;
           max_participants?: number | null;
           status?: "draft" | "confirmed" | "cancelled";
+          time_block?: "morning" | "noon" | "evening" | null;
           title: string;
           updated_at?: string;
         };
@@ -43,6 +45,7 @@ export type Database = {
           location?: string | null;
           max_participants?: number | null;
           status?: "draft" | "confirmed" | "cancelled";
+          time_block?: "morning" | "noon" | "evening" | null;
           title?: string;
           updated_at?: string;
         };
