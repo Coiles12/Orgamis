@@ -13,9 +13,15 @@ END $$;
 ALTER TABLE public.availability_slots ADD COLUMN IF NOT EXISTS status public.availability_status;
 
 -- Migrer les données existantes : is_available=true -> available, is_available=false -> unavailable
-UPDATE public.availability_slots 
-SET status = CASE WHEN is_available = true THEN 'available' ELSE 'unavailable' END::public.availability_status
-WHERE status IS NULL;
+-- Seulement si la colonne is_available existe encore
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'availability_slots' AND column_name = 'is_available') THEN
+        UPDATE public.availability_slots 
+        SET status = CASE WHEN is_available = true THEN 'available' ELSE 'unavailable' END::public.availability_status
+        WHERE status IS NULL;
+    END IF;
+END $$;
 
 -- Rendre la colonne NOT NULL
 ALTER TABLE public.availability_slots ALTER COLUMN status SET NOT NULL;
