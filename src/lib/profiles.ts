@@ -9,16 +9,17 @@ export async function ensureUserProfile(
   userId: string,
   displayName?: string | null,
 ) {
-  const { error } = await supabase.from("profiles").upsert(
-    {
-      id: userId,
-      display_name: displayName?.trim() || "Membre",
-    },
-    {
-      onConflict: "id",
-      ignoreDuplicates: true,
-    },
-  );
+  const { error } = await supabase
+    .from("profiles")
+    .upsert(
+      {
+        id: userId,
+        display_name: displayName?.trim() || "Membre",
+      } as any,
+      {
+        onConflict: "id",
+      },
+    );
 
   return { error };
 }
