@@ -84,10 +84,9 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
           .lte("slot_date", to),
         supabase
           .from("activities")
-          .select("id, title, date, time_block, location")
-          .gte("date", from)
-          .lte("date", to)
-          .eq("status", "confirmed"),
+          .select("id, title, date, time_block, location, status")
+          .gte("date", `${from}T00:00:00Z`)
+          .lte("date", `${to}T23:59:59Z`),
       ]);
 
       if (profilesResult.error || availabilityResult.error || activitiesResult.error) {
@@ -108,6 +107,7 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
       setGroupCounts(nextGroupCounts);
       setMemberCount(profilesResult.count ?? 0);
       setActivities(activitiesResult.data ?? []);
+      console.log('Loaded activities:', activitiesResult.data);
       setIsLoading(false);
     },
     [supabase, userId, userLabel],
@@ -151,7 +151,8 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
     return activities.filter(
       (activity) => {
         const activityDate = new Date(activity.date).toISOString().split('T')[0];
-        return activityDate === date && activity.time_block === timeBlock;
+        // Show activity if date matches and either time_block matches or is null (show in all blocks)
+        return activityDate === date && (!activity.time_block || activity.time_block === timeBlock);
       }
     );
   }, [activities]);
