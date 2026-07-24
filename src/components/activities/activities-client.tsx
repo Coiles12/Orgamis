@@ -579,7 +579,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
                           : [...previous.time_blocks, block.value],
                       }));
                     }}
-                    className={`rounded-md border px-4 py-2 text-sm font-semibold transition ${
+                    className={`flex-none rounded-md border px-4 py-2 text-sm font-semibold transition ${
                       isSelected
                         ? "border-emerald-600 bg-emerald-600 text-white"
                         : "border-zinc-200 bg-white text-zinc-700 hover:border-emerald-300 hover:bg-emerald-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-emerald-500 dark:hover:bg-emerald-950"
