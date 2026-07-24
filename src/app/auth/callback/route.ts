@@ -14,12 +14,13 @@ export async function GET(request: NextRequest) {
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       cookies: {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet: { name: string; value: string; options?: any }[]) {
-          cookiesToSet.forEach(({ name, value, options }) => {
+        setAll(cookiesToSet: any) {
+          cookiesToSet.forEach(({ name, value, options }: any) => {
             response.cookies.set(name, value, options);
           });
         },
