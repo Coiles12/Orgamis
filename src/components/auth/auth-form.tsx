@@ -1,6 +1,7 @@
 "use client";
 
 import { Mail } from "lucide-react";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useMemo, useState } from "react";
 
@@ -108,9 +109,15 @@ export function AuthForm() {
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 py-10 sm:px-6 dark:bg-zinc-950">
       <div className="w-full max-w-md rounded-[2rem] border border-zinc-200 bg-white p-6 shadow-xl shadow-zinc-950/5 sm:p-8 dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/50">
         <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-600 dark:text-emerald-400">
-            Orgamis
-          </p>
+          <div className="flex justify-center">
+            <Image
+              src="/logo-orgamis.svg"
+              alt="Orgamis"
+              width={48}
+              height={48}
+              className="h-12 w-auto"
+            />
+          </div>
           <h1 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
             {mode === "login" ? "Connexion" : "Créer un compte"}
           </h1>

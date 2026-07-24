@@ -35,9 +35,6 @@ export function AppHeader({ currentPath, userLabel }: AppHeaderProps) {
                 height={40}
                 className="h-10 w-auto"
               />
-              <span className="text-xl font-semibold text-zinc-950 dark:text-zinc-50">
-                Orgamis
-              </span>
             </Link>
             <span className="text-sm text-zinc-500 dark:text-zinc-400">·</span>
             <p className="text-sm text-zinc-500 dark:text-zinc-400">{userLabel}</p>
