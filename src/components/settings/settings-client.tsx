@@ -293,32 +293,34 @@ export function SettingsClient({ userId, isAdmin }: SettingsClientProps) {
                   className="flex items-center justify-between rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-800"
                 >
                   {editingProfileId === profile.id ? (
-                    <form onSubmit={handleUpdateDisplayName} className="flex flex-1 items-center gap-3">
+                    <form onSubmit={handleUpdateDisplayName} className="flex w-full flex-col gap-3">
                       <input
                         type="text"
                         value={newDisplayName}
                         onChange={(e) => setNewDisplayName(e.target.value)}
                         placeholder="Nouveau pseudo"
-                        className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
+                        className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
                         autoFocus
                       />
-                      <button
-                        type="submit"
-                        disabled={isSaving}
-                        className="rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {isSaving ? "Enregistrement..." : "Sauvegarder"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditingProfileId(null);
-                          setNewDisplayName("");
-                        }}
-                        className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                      >
-                        Annuler
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="submit"
+                          disabled={isSaving}
+                          className="flex-1 rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {isSaving ? "Enregistrement..." : "Sauvegarder"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingProfileId(null);
+                            setNewDisplayName("");
+                          }}
+                          className="flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                        >
+                          Annuler
+                        </button>
+                      </div>
                     </form>
                   ) : (
                     <>
