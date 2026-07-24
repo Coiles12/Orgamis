@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, LoaderCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, LoaderCircle, Check, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -351,9 +351,9 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
                         {isSaving ? (
                           <LoaderCircle className="size-4 animate-spin" />
                         ) : isActive ? (
-                          "Disponible"
+                          <Check className="size-5 sm:size-6" />
                         ) : (
-                          "Indisponible"
+                          <X className="size-5 sm:size-6" />
                         )}
                       </button>
                     </div>
