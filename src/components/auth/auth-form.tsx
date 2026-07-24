@@ -105,30 +105,30 @@ export function AuthForm() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 py-10 sm:px-6">
-      <div className="w-full max-w-md rounded-[2rem] border border-zinc-200 bg-white p-6 shadow-xl shadow-zinc-950/5 sm:p-8">
+    <div className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 py-10 sm:px-6 dark:bg-zinc-950">
+      <div className="w-full max-w-md rounded-[2rem] border border-zinc-200 bg-white p-6 shadow-xl shadow-zinc-950/5 sm:p-8 dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/50">
         <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-600">
+          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-600 dark:text-emerald-400">
             Orgamis
           </p>
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950">
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
             {mode === "login" ? "Connexion" : "Créer un compte"}
           </h1>
-          <p className="mt-3 text-sm leading-6 text-zinc-500">
+          <p className="mt-3 text-sm leading-6 text-zinc-500 dark:text-zinc-400">
             {mode === "login"
               ? "Connectez-vous pour gérer vos disponibilités et activités."
               : "Inscrivez-vous pour rejoindre votre groupe d'amis."}
           </p>
         </div>
 
-        <div className="mt-6 grid grid-cols-2 rounded-full bg-zinc-100 p-1">
+        <div className="mt-6 grid grid-cols-2 rounded-full bg-zinc-100 p-1 dark:bg-zinc-800">
           <button
             type="button"
             onClick={() => setMode("login")}
             className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
               mode === "login"
-                ? "bg-white text-zinc-950 shadow-sm"
-                : "text-zinc-500"
+                ? "bg-white text-zinc-950 shadow-sm dark:bg-zinc-700 dark:text-zinc-50"
+                : "text-zinc-500 dark:text-zinc-400"
             }`}
           >
             Connexion
@@ -138,8 +138,8 @@ export function AuthForm() {
             onClick={() => setMode("signup")}
             className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
               mode === "signup"
-                ? "bg-white text-zinc-950 shadow-sm"
-                : "text-zinc-500"
+                ? "bg-white text-zinc-950 shadow-sm dark:bg-zinc-700 dark:text-zinc-50"
+                : "text-zinc-500 dark:text-zinc-400"
             }`}
           >
             Inscription
@@ -150,7 +150,7 @@ export function AuthForm() {
           type="button"
           onClick={handleGoogleAuth}
           disabled={isSubmitting}
-          className="mt-6 inline-flex w-full items-center justify-center gap-3 rounded-2xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60"
+          className="mt-6 inline-flex w-full items-center justify-center gap-3 rounded-2xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
         >
           <svg className="size-4" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -162,32 +162,32 @@ export function AuthForm() {
         </button>
 
         <div className="mt-6 flex items-center gap-3 text-xs uppercase tracking-[0.25em] text-zinc-400">
-          <span className="h-px flex-1 bg-zinc-200" />
+          <span className="h-px flex-1 bg-zinc-200 dark:bg-zinc-700" />
           ou par email
-          <span className="h-px flex-1 bg-zinc-200" />
+          <span className="h-px flex-1 bg-zinc-200 dark:bg-zinc-700" />
         </div>
 
         <form className="mt-6 space-y-4" onSubmit={handleEmailAuth}>
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-zinc-700">
+            <span className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
               Adresse email
             </span>
             <div className="relative">
-              <Mail className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
+              <Mail className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" />
               <input
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 required
                 autoComplete="email"
-                className="w-full rounded-2xl border border-zinc-200 bg-white py-3 pr-4 pl-11 text-sm text-zinc-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                className="w-full rounded-2xl border border-zinc-200 bg-white py-3 pr-4 pl-11 text-sm text-zinc-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
                 placeholder="vous@exemple.com"
               />
             </div>
           </label>
 
           <label className="block">
-            <span className="mb-2 block text-sm font-medium text-zinc-700">
+            <span className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
               Mot de passe
             </span>
             <input
@@ -199,13 +199,13 @@ export function AuthForm() {
               autoComplete={
                 mode === "login" ? "current-password" : "new-password"
               }
-              className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+              className="w-full rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
               placeholder="Minimum 6 caractères"
             />
           </label>
 
           {(initialError || message) && (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
               {message ?? initialError}
             </div>
           )}
