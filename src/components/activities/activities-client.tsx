@@ -268,7 +268,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
 
   useEffect(() => {
     void loadActivities();
-  }, []);
+  }, [loadActivities]);
 
   const handleCreateActivity = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -602,7 +602,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
               ) : (
                 <Plus className="size-4" />
               )}
-              Créer l'activité
+              Créer l&apos;activité
             </button>
           </div>
         </form>
@@ -859,7 +859,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
                 <div className="mt-4 flex flex-wrap gap-3">
                   {activityView.participants.length === 0 && (
                     <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                      Aucun participant n'a encore renseigné son transport.
+                      Aucun participant n&apos;a encore renseigné son transport.
                     </span>
                   )}
 

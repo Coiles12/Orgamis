@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, LoaderCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -10,7 +10,6 @@ import {
 } from "@/lib/constants";
 import {
   getWeekDays,
-  getWeekMeta,
   parseWeekStart,
   shiftWeek,
   toDateInputValue,
@@ -64,7 +63,6 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
   const weekStartValue = useMemo(() => toDateInputValue(weekStart), [weekStart]);
   const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart]);
   const weekEndValue = weekDays[6]?.date ?? weekStartValue;
-  const weekMeta = useMemo(() => getWeekMeta(weekStart), [weekStart]);
 
   const loadWeek = useCallback(
     async (from: string, to: string) => {

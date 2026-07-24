@@ -6,7 +6,7 @@ export default async function OnboardingPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-zinc-50 px-4 py-10 sm:px-6 dark:bg-zinc-950">
-      <OnboardingClient userId={user.id} userEmail={user.email} />
+      <OnboardingClient userId={user.id} />
     </main>
   );
 }

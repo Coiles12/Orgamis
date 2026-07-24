@@ -9,6 +9,7 @@ export async function ensureUserProfile(
   userId: string,
   displayName?: string | null,
 ) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await supabase
     .from("profiles")
     .upsert(

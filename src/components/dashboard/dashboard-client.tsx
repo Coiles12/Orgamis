@@ -18,7 +18,6 @@ import {
 } from "@/lib/date";
 import { ensureUserProfile } from "@/lib/profiles";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import type { AvailabilityRow } from "@/types/app";
 
 type DashboardClientProps = {
   userId: string;
@@ -27,28 +26,6 @@ type DashboardClientProps = {
 
 function buildAvailabilityKey(date: string, timeBlock: TimeBlock) {
   return `${date}__${timeBlock}`;
-}
-
-function getHeatClasses(count: number, memberCount: number) {
-  if (memberCount === 0 || count === 0) {
-    return "bg-zinc-100 text-zinc-500";
-  }
-
-  const ratio = count / memberCount;
-
-  if (ratio >= 0.75) {
-    return "bg-emerald-600 text-white";
-  }
-
-  if (ratio >= 0.5) {
-    return "bg-emerald-200 text-emerald-950";
-  }
-
-  if (ratio >= 0.25) {
-    return "bg-amber-100 text-amber-950";
-  }
-
-  return "bg-zinc-200 text-zinc-700";
 }
 
 export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
@@ -103,7 +80,7 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
 
   useEffect(() => {
     void loadWeek(weekStartValue, weekEndValue);
-  }, [weekEndValue, weekStartValue]);
+  }, [weekEndValue, weekStartValue, loadWeek]);
 
   const navigateWeek = (offset: number) => {
     const nextWeekStart = toDateInputValue(shiftWeek(weekStart, offset));

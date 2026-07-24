@@ -8,10 +8,9 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type OnboardingClientProps = {
   userId: string;
-  userEmail?: string | null;
 };
 
-export function OnboardingClient({ userId, userEmail }: OnboardingClientProps) {
+export function OnboardingClient({ userId }: OnboardingClientProps) {
   const router = useRouter();
   const [supabase] = useState(() => createSupabaseBrowserClient());
   const [displayName, setDisplayName] = useState("");

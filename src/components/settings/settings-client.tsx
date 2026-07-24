@@ -8,11 +8,10 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type SettingsClientProps = {
   userId: string;
-  userLabel: string;
   isAdmin: boolean;
 };
 
-export function SettingsClient({ userId, userLabel, isAdmin }: SettingsClientProps) {
+export function SettingsClient({ userId, isAdmin }: SettingsClientProps) {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [supabase] = useState(() => createSupabaseBrowserClient());
   const [profiles, setProfiles] = useState<Array<{ id: string; display_name: string | null }>>([]);

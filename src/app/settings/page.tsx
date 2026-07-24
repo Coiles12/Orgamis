@@ -27,7 +27,7 @@ export default async function SettingsPage() {
   return (
     <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <AppHeader currentPath="/settings" userLabel={userLabel} />
-      <SettingsClient userId={user.id} userLabel={userLabel} isAdmin={profile?.is_admin ?? false} />
+      <SettingsClient userId={user.id} isAdmin={profile?.is_admin ?? false} />
     </main>
   );
 }
