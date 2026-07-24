@@ -149,7 +149,10 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
 
   const getActivitiesForSlot = useCallback((date: string, timeBlock: TimeBlock) => {
     return activities.filter(
-      (activity) => activity.date === date && activity.time_block === timeBlock
+      (activity) => {
+        const activityDate = new Date(activity.date).toISOString().split('T')[0];
+        return activityDate === date && activity.time_block === timeBlock;
+      }
     );
   }, [activities]);
 
