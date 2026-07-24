@@ -60,7 +60,7 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
   const [selectedSlot, setSelectedSlot] = useState<{ date: string; timeBlock: TimeBlock } | null>(null);
   const [slotDetails, setSlotDetails] = useState<Array<{ user_id: string; display_name: string | null; status: "available" | "unsure" | "unavailable" }>>([]);
   const [loadingDetails, setLoadingDetails] = useState(false);
-  const [activities, setActivities] = useState<Array<{ id: string; title: string; date: string; time_blocks: TimeBlock[] | null; location: string | null }>>([]);
+  const [activities, setActivities] = useState<Array<{ id: string; title: string; date: string; time_block: TimeBlock | null; location: string | null }>>([]);
 
   const weekParam = searchParams.get("week");
   const weekStart = useMemo(() => parseWeekStart(weekParam), [weekParam]);
@@ -84,7 +84,7 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
           .lte("slot_date", to),
         supabase
           .from("activities")
-          .select("id, title, date, time_blocks, location, status")
+          .select("id, title, date, time_block, location, status")
           .gte("date", `${from}T00:00:00Z`)
           .lte("date", `${to}T23:59:59Z`),
       ]);
@@ -150,8 +150,8 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
     return activities.filter(
       (activity) => {
         const activityDate = new Date(activity.date).toISOString().split('T')[0];
-        // Show activity if date matches and timeBlock is in time_blocks array or time_blocks is null (show in all blocks)
-        return activityDate === date && (!activity.time_blocks || activity.time_blocks.includes(timeBlock));
+        // Show activity if date matches and either time_block matches or is null (show in all blocks)
+        return activityDate === date && (!activity.time_block || activity.time_block === timeBlock);
       }
     );
   }, [activities]);

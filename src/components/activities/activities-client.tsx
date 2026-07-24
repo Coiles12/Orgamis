@@ -279,15 +279,24 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
     setPendingAction("create-activity");
     setMessage(null);
 
-    const { error } = await supabase.from("activities").insert({
-      created_by: userId,
-      title: activityForm.title,
-      description: activityForm.description || null,
-      location: activityForm.location || null,
-      date: new Date(activityForm.date).toISOString(),
-      time_blocks: activityForm.time_blocks.length > 0 ? activityForm.time_blocks : null,
-      status: "confirmed",
-    });
+    if (activityForm.time_blocks.length === 0) {
+      setMessage("Veuillez sélectionner au moins un moment de la journée.");
+      setPendingAction(null);
+      return;
+    }
+
+    // Create one activity per selected time_block
+    const { error } = await supabase.from("activities").insert(
+      activityForm.time_blocks.map((time_block) => ({
+        created_by: userId,
+        title: activityForm.title,
+        description: activityForm.description || null,
+        location: activityForm.location || null,
+        date: new Date(activityForm.date).toISOString(),
+        time_block,
+        status: "confirmed",
+      }))
+    );
 
     setPendingAction(null);
 
@@ -560,7 +569,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
             />
           </label>
 
-          <label className="block md:col-span-2">
+          <label className="block">
             <span className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
               Moment de la journée
             </span>
@@ -575,14 +584,14 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
                       setActivityForm((previous) => ({
                         ...previous,
                         time_blocks: isSelected
-                          ? previous.time_blocks.filter((b) => b !== block.value)
+                          ? previous.time_blocks.filter((t) => t !== block.value)
                           : [...previous.time_blocks, block.value],
                       }));
                     }}
-                    className={`flex-none rounded-md border px-4 py-2 text-sm font-semibold transition ${
+                    className={`rounded-md px-4 py-2 text-sm font-semibold transition ${
                       isSelected
-                        ? "border-emerald-600 bg-emerald-600 text-white"
-                        : "border-zinc-200 bg-white text-zinc-700 hover:border-emerald-300 hover:bg-emerald-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-emerald-500 dark:hover:bg-emerald-950"
+                        ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                        : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
                     }`}
                   >
                     {block.label}
