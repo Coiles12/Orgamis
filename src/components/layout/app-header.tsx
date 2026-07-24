@@ -26,7 +26,7 @@ export function AppHeader({ currentPath, userLabel }: AppHeaderProps) {
         </div>
 
         <nav className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-2 rounded-md bg-zinc-100 p-1 dark:bg-zinc-800">
+          <div className="flex items-center gap-1 overflow-x-auto rounded-md bg-zinc-100 p-1 dark:bg-zinc-800 sm:gap-2">
             {navigation.map((item) => {
               const isActive = item.href === currentPath;
 
@@ -34,7 +34,7 @@ export function AppHeader({ currentPath, userLabel }: AppHeaderProps) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`rounded-md px-4 py-2 text-sm font-semibold transition ${
+                  className={`whitespace-nowrap rounded-md px-3 py-2 text-xs font-semibold transition sm:px-4 sm:py-2 sm:text-sm ${
                     isActive
                       ? "bg-white text-zinc-950 shadow-sm dark:bg-zinc-700 dark:text-zinc-50"
                       : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
