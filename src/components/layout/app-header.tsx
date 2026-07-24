@@ -9,8 +9,8 @@ type AppHeaderProps = {
 
 const navigation = [
   { href: "/dashboard", label: "Disponibilités" },
-  { href: "/activities", label: "Activités" },
   { href: "/group", label: "Vue groupe" },
+  { href: "/activities", label: "Activités" },
   { href: "/settings", label: "Paramètres" },
 ] as const;
 
