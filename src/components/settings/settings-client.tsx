@@ -133,7 +133,7 @@ export function SettingsClient({ userId, isAdmin }: SettingsClientProps) {
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
-      <section className="rounded-[2rem] border border-zinc-200 bg-white p-5 shadow-lg shadow-zinc-950/5 dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/50 sm:p-6">
+      <section className="rounded-md border border-zinc-200 bg-white p-5 shadow-lg shadow-zinc-950/5 dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/50 sm:p-6">
         <div>
           <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
             Paramètres
@@ -201,7 +201,7 @@ export function SettingsClient({ userId, isAdmin }: SettingsClientProps) {
         </div>
       </section>
 
-      <section className="rounded-[2rem] border border-zinc-200 bg-white p-5 shadow-lg shadow-zinc-950/5 dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/50 sm:p-6">
+      <section className="rounded-md border border-zinc-200 bg-white p-5 shadow-lg shadow-zinc-950/5 dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/50 sm:p-6">
         <div>
           <p className="text-sm font-medium text-red-600 dark:text-red-400">
             Zone de danger
@@ -261,7 +261,7 @@ export function SettingsClient({ userId, isAdmin }: SettingsClientProps) {
       </section>
 
       {isAdmin && (
-        <section className="rounded-[2rem] border border-zinc-200 bg-white p-5 shadow-lg shadow-zinc-950/5 dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/50 sm:p-6">
+        <section className="rounded-md border border-zinc-200 bg-white p-5 shadow-lg shadow-zinc-950/5 dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/50 sm:p-6">
           <div>
             <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
               Administration

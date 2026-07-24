@@ -341,7 +341,7 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
                         type="button"
                         onClick={() => toggleAvailability(day.date, block.value)}
                         disabled={isSaving}
-                        className={`flex h-18 min-h-[72px] w-full flex-col items-center justify-center rounded-md border text-sm font-semibold transition ${
+                        className={`flex h-18 min-h-[72px] w-full flex-col items-center justify-center rounded-md border text-xs font-semibold transition sm:text-sm ${
                           isActive
                             ? "border-emerald-600 bg-emerald-600 text-white"
                             : "border-zinc-200 bg-white text-zinc-500 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:border-emerald-500 dark:hover:bg-emerald-950 dark:hover:text-emerald-300"

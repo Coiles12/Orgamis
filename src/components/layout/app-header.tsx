@@ -26,7 +26,7 @@ export function AppHeader({ currentPath, userLabel }: AppHeaderProps) {
         </div>
 
         <nav className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <div className="flex items-center gap-1 overflow-x-auto rounded-md bg-zinc-100 p-1 dark:bg-zinc-800 sm:gap-2">
+          <div className="flex flex-wrap items-center gap-1 rounded-md bg-zinc-100 p-1 dark:bg-zinc-800 sm:gap-2">
             {navigation.map((item) => {
               const isActive = item.href === currentPath;
 
