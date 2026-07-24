@@ -49,3 +49,14 @@ ORDER BY slot_date, time_block;
 
 -- Ajouter time_block à la table activities
 ALTER TABLE public.activities ADD COLUMN IF NOT EXISTS time_block public.time_block;
+
+-- Ajouter time_blocks (array) pour supporter plusieurs moments
+ALTER TABLE public.activities ADD COLUMN IF NOT EXISTS time_blocks public.time_block[];
+
+-- Migrer les données existantes : time_block -> time_blocks array
+UPDATE public.activities 
+SET time_blocks = ARRAY[time_block]::public.time_block[]
+WHERE time_block IS NOT NULL AND time_blocks IS NULL;
+
+-- Supprimer l'ancienne colonne time_block (optionnel, garder pour compatibilité)
+-- ALTER TABLE public.activities DROP COLUMN IF EXISTS time_block;

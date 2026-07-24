@@ -54,7 +54,7 @@ type ActivityFormState = {
   location: string;
   description: string;
   date: string;
-  time_block: TimeBlock | null;
+  time_blocks: TimeBlock[];
 };
 
 type CarFormState = {
@@ -67,7 +67,7 @@ const initialActivityForm: ActivityFormState = {
   location: "",
   description: "",
   date: toDateTimeLocalValue(new Date()),
-  time_block: null,
+  time_blocks: [],
 };
 
 export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClientProps) {
@@ -285,7 +285,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
       description: activityForm.description || null,
       location: activityForm.location || null,
       date: new Date(activityForm.date).toISOString(),
-      time_block: activityForm.time_block,
+      time_blocks: activityForm.time_blocks.length > 0 ? activityForm.time_blocks : null,
       status: "confirmed",
     });
 
@@ -564,23 +564,32 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
             <span className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
               Moment de la journée
             </span>
-            <select
-              value={activityForm.time_block || ""}
-              onChange={(event) =>
-                setActivityForm((previous) => ({
-                  ...previous,
-                  time_block: (event.target.value as TimeBlock) || null,
-                }))
-              }
-              className="w-full rounded-md border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
-            >
-              <option value="">Toute la journée</option>
-              {TIME_BLOCKS.map((block) => (
-                <option key={block.value} value={block.value}>
-                  {block.label}
-                </option>
-              ))}
-            </select>
+            <div className="flex flex-wrap gap-2">
+              {TIME_BLOCKS.map((block) => {
+                const isSelected = activityForm.time_blocks.includes(block.value);
+                return (
+                  <button
+                    key={block.value}
+                    type="button"
+                    onClick={() => {
+                      setActivityForm((previous) => ({
+                        ...previous,
+                        time_blocks: isSelected
+                          ? previous.time_blocks.filter((b) => b !== block.value)
+                          : [...previous.time_blocks, block.value],
+                      }));
+                    }}
+                    className={`rounded-md border px-4 py-2 text-sm font-semibold transition ${
+                      isSelected
+                        ? "border-emerald-600 bg-emerald-600 text-white"
+                        : "border-zinc-200 bg-white text-zinc-700 hover:border-emerald-300 hover:bg-emerald-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-emerald-500 dark:hover:bg-emerald-950"
+                    }`}
+                  >
+                    {block.label}
+                  </button>
+                );
+              })}
+            </div>
           </label>
 
           <label className="block">

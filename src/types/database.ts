@@ -20,6 +20,7 @@ export type Database = {
           max_participants: number | null;
           status: "draft" | "confirmed" | "cancelled";
           time_block: "morning" | "noon" | "evening" | null;
+          time_blocks: ("morning" | "noon" | "evening")[] | null;
           title: string;
           updated_at: string;
         };
@@ -33,6 +34,7 @@ export type Database = {
           max_participants?: number | null;
           status?: "draft" | "confirmed" | "cancelled";
           time_block?: "morning" | "noon" | "evening" | null;
+          time_blocks?: ("morning" | "noon" | "evening")[] | null;
           title: string;
           updated_at?: string;
         };
@@ -46,6 +48,7 @@ export type Database = {
           max_participants?: number | null;
           status?: "draft" | "confirmed" | "cancelled";
           time_block?: "morning" | "noon" | "evening" | null;
+          time_blocks?: ("morning" | "noon" | "evening")[] | null;
           title?: string;
           updated_at?: string;
         };
