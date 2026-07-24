@@ -560,7 +560,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
             />
           </label>
 
-          <label className="block">
+          <label className="block md:col-span-2">
             <span className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
               Moment de la journée
             </span>
