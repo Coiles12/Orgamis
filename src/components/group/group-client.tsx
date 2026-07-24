@@ -199,7 +199,7 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
                 return (
                   <div key={key} className="border-r border-zinc-100 p-2 last:border-r-0 dark:border-zinc-700">
                     <div
-                      className={`flex h-16 items-center justify-center rounded-md text-sm font-semibold relative ${getHeatClasses(
+                      className={`flex h-14 items-center justify-center rounded-md text-sm font-semibold relative ${getHeatClasses(
                         count,
                         memberCount,
                       )}`}

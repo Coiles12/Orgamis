@@ -25,10 +25,13 @@ export function AppHeader({ currentPath, userLabel }: AppHeaderProps) {
     <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/90 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/90">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
         <div className="flex items-center justify-between lg:justify-start">
-          <Link href="/dashboard" className="text-xl font-semibold text-zinc-950 dark:text-zinc-50">
-            Orgamis
-          </Link>
-          <p className="ml-4 hidden text-sm text-zinc-500 dark:text-zinc-400 lg:block">{userLabel}</p>
+          <div className="flex items-center gap-2">
+            <Link href="/dashboard" className="text-xl font-semibold text-zinc-950 dark:text-zinc-50">
+              Orgamis
+            </Link>
+            <span className="text-sm text-zinc-500 dark:text-zinc-400">·</span>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">{userLabel}</p>
+          </div>
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
