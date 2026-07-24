@@ -57,6 +57,9 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
   const [memberCount, setMemberCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<{ date: string; timeBlock: TimeBlock } | null>(null);
+  const [slotDetails, setSlotDetails] = useState<Array<{ user_id: string; display_name: string | null; status: "available" | "unsure" | "unavailable" }>>([]);
+  const [loadingDetails, setLoadingDetails] = useState(false);
 
   const weekParam = searchParams.get("week");
   const weekStart = useMemo(() => parseWeekStart(weekParam), [weekParam]);
@@ -75,10 +78,9 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
         supabase.from("profiles").select("*", { count: "exact", head: true }),
         supabase
           .from("availability_slots")
-          .select("id, user_id, slot_date, time_block, is_available")
+          .select("id, user_id, slot_date, time_block, status")
           .gte("slot_date", from)
-          .lte("slot_date", to)
-          .eq("is_available", true),
+          .lte("slot_date", to),
       ]);
 
       if (profilesResult.error || availabilityResult.error) {
@@ -92,7 +94,8 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
 
       availabilityRows.forEach((row) => {
         const key = buildAvailabilityKey(row.slot_date, row.time_block);
-        nextGroupCounts[key] = (nextGroupCounts[key] ?? 0) + 1;
+        const weight = row.status === "available" ? 1 : row.status === "unsure" ? 0.5 : 0;
+        nextGroupCounts[key] = (nextGroupCounts[key] ?? 0) + weight;
       });
 
       setGroupCounts(nextGroupCounts);
@@ -101,6 +104,40 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
     },
     [supabase, userId, userLabel],
   );
+
+  const loadSlotDetails = useCallback(async (date: string, timeBlock: TimeBlock) => {
+    setLoadingDetails(true);
+    setSelectedSlot({ date, timeBlock });
+
+    const [profilesResult, availabilityResult] = await Promise.all([
+      supabase.from("profiles").select("id, display_name"),
+      supabase
+        .from("availability_slots")
+        .select("user_id, status")
+        .eq("slot_date", date)
+        .eq("time_block", timeBlock),
+    ]);
+
+    if (profilesResult.error || availabilityResult.error) {
+      setLoadingDetails(false);
+      return;
+    }
+
+    const profiles = profilesResult.data ?? [];
+    const availabilities = availabilityResult.data ?? [];
+
+    const details = profiles.map((profile) => {
+      const availability = availabilities.find((a) => a.user_id === profile.id);
+      return {
+        user_id: profile.id,
+        display_name: profile.display_name,
+        status: availability?.status ?? "unavailable",
+      };
+    });
+
+    setSlotDetails(details);
+    setLoadingDetails(false);
+  }, [supabase]);
 
   const navigateWeek = useCallback(
     (direction: number) => {
@@ -198,8 +235,10 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
 
                 return (
                   <div key={key} className="border-r border-zinc-100 p-2 last:border-r-0 dark:border-zinc-700">
-                    <div
-                      className={`flex h-14 items-center justify-center rounded-md text-sm font-semibold relative ${getHeatClasses(
+                    <button
+                      type="button"
+                      onClick={() => loadSlotDetails(day.date, block.value)}
+                      className={`flex h-14 w-full items-center justify-center rounded-md text-sm font-semibold relative transition hover:ring-2 hover:ring-emerald-500 ${getHeatClasses(
                         count,
                         memberCount,
                       )}`}
@@ -210,13 +249,67 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
                           ⭐
                         </span>
                       )}
-                    </div>
+                    </button>
                   </div>
                 );
               })}
             </div>
           ))}
         </div>
+
+        {selectedSlot && (
+          <div className="mt-6 rounded-md border border-zinc-200 bg-white p-5 shadow-lg shadow-zinc-950/5 dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/50 sm:p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">
+                  Détails du créneau
+                </h3>
+                <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                  {selectedSlot.date} - {TIME_BLOCKS.find((b) => b.value === selectedSlot.timeBlock)?.label}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedSlot(null)}
+                className="rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+              >
+                Fermer
+              </button>
+            </div>
+
+            {loadingDetails ? (
+              <div className="mt-4 text-sm text-zinc-500">Chargement...</div>
+            ) : (
+              <div className="mt-4 space-y-2">
+                {slotDetails.map((detail) => (
+                  <div
+                    key={detail.user_id}
+                    className="flex items-center justify-between rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800"
+                  >
+                    <span className="text-sm font-medium text-zinc-950 dark:text-zinc-50">
+                      {detail.display_name || "Sans pseudo"}
+                    </span>
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        detail.status === "available"
+                          ? "bg-emerald-100 text-emerald-900 dark:bg-emerald-900 dark:text-emerald-100"
+                          : detail.status === "unsure"
+                            ? "bg-amber-100 text-amber-900 dark:bg-amber-900 dark:text-amber-100"
+                            : "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300"
+                      }`}
+                    >
+                      {detail.status === "available"
+                        ? "Disponible"
+                        : detail.status === "unsure"
+                          ? "Pas sûr"
+                          : "Indisponible"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {isLoading && (
           <div className="mt-4 text-sm text-zinc-500">

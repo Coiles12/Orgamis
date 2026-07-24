@@ -5,6 +5,7 @@ create extension if not exists "pgcrypto";
 
 create type public.time_block as enum ('morning', 'noon', 'evening');
 create type public.activity_status as enum ('draft', 'confirmed', 'cancelled');
+create type public.availability_status as enum ('available', 'unavailable', 'unsure');
 create type public.transport_mode as enum (
   'car_driver',
   'car_passenger',
@@ -40,7 +41,7 @@ create table if not exists public.availability_slots (
   iso_year integer generated always as (extract(isoyear from slot_date)::integer) stored,
   iso_week integer generated always as (extract(week from slot_date)::integer) stored,
   time_block public.time_block not null,
-  is_available boolean not null default true,
+  status public.availability_status not null default 'available',
   notes text,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now()),
@@ -203,7 +204,9 @@ select
   iso_week,
   slot_date,
   time_block,
-  count(*) filter (where is_available) as available_count
+  count(*) filter (where status = 'available') as available_count,
+  count(*) filter (where status = 'unsure') as unsure_count,
+  (count(*) filter (where status = 'available') + count(*) filter (where status = 'unsure') * 0.5)::numeric as weighted_count
 from public.availability_slots
 group by iso_year, iso_week, slot_date, time_block
 order by iso_year, iso_week, slot_date, time_block;

@@ -5,7 +5,7 @@ export type AvailabilityRow = {
   user_id: string;
   slot_date: string;
   time_block: TimeBlock;
-  is_available: boolean;
+  status: "available" | "unsure" | "unavailable";
 };
 
 export type ProfileRow = {

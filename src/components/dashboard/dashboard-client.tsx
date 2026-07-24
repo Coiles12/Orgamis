@@ -32,7 +32,7 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [supabase] = useState(() => createSupabaseBrowserClient());
-  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+  const [selectedKeys, setSelectedKeys] = useState<Record<string, "available" | "unsure" | "unavailable">>({});
   const [isLoading, setIsLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +43,6 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
   const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart]);
   const weekEndValue = weekDays[6]?.date ?? weekStartValue;
   const weekMeta = useMemo(() => getWeekMeta(weekStart), [weekStart]);
-  const selectedSet = useMemo(() => new Set(selectedKeys), [selectedKeys]);
 
   const loadWeek = useCallback(
     async (from: string, to: string) => {
@@ -54,7 +53,7 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
 
       const { data: availabilityResult, error: availabilityError } = await supabase
         .from("availability_slots")
-        .select("id, user_id, slot_date, time_block, is_available")
+        .select("id, user_id, slot_date, time_block, status")
         .gte("slot_date", from)
         .lte("slot_date", to)
         .eq("user_id", userId);
@@ -65,11 +64,10 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
         return;
       }
 
-      const nextSelectedKeys: string[] = [];
+      const nextSelectedKeys: Record<string, "available" | "unsure" | "unavailable"> = {};
       availabilityResult?.forEach((row) => {
-        if (row.is_available) {
-          nextSelectedKeys.push(buildAvailabilityKey(row.slot_date, row.time_block));
-        }
+        const key = buildAvailabilityKey(row.slot_date, row.time_block);
+        nextSelectedKeys[key] = row.status;
       });
 
       setSelectedKeys(nextSelectedKeys);
@@ -89,13 +87,22 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
 
   const toggleAvailability = async (date: string, timeBlock: TimeBlock) => {
     const key = buildAvailabilityKey(date, timeBlock);
-    const isSelected = selectedSet.has(key);
+    const currentStatus = selectedKeys[key];
+    
+    // Cycle through: unavailable -> available -> unsure -> unavailable
+    const nextStatus: "available" | "unsure" | "unavailable" = 
+      currentStatus === "unavailable" ? "available" :
+      currentStatus === "available" ? "unsure" : "unavailable";
 
     setSavingKey(key);
     setError(null);
 
-    if (isSelected) {
-      setSelectedKeys((previous) => previous.filter((item) => item !== key));
+    if (nextStatus === "unavailable") {
+      setSelectedKeys((previous) => {
+        const updated = { ...previous };
+        delete updated[key];
+        return updated;
+      });
 
       const { error: deleteError } = await supabase
         .from("availability_slots")
@@ -114,14 +121,14 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
       return;
     }
 
-    setSelectedKeys((previous) => [...previous, key]);
+    setSelectedKeys((previous) => ({ ...previous, [key]: nextStatus }));
 
     const { error: upsertError } = await supabase.from("availability_slots").upsert(
       {
         user_id: userId,
         slot_date: date,
         time_block: timeBlock,
-        is_available: true,
+        status: nextStatus,
       },
       {
         onConflict: "user_id,slot_date,time_block",
@@ -138,15 +145,16 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
 
   const toggleDay = async (date: string) => {
     const keysForDay = TIME_BLOCKS.map((block) => buildAvailabilityKey(date, block.value));
-    const allSelected = keysForDay.every((key) => selectedSet.has(key));
+    const allSelected = keysForDay.every((key) => selectedKeys[key] && selectedKeys[key] !== "unavailable");
 
     setError(null);
 
     if (allSelected) {
       // Deselect all slots for this day
-      setSelectedKeys((previous) => previous.filter((item) => !keysForDay.includes(item)));
-      keysForDay.forEach(() => {
-        // Removed group count logic
+      setSelectedKeys((previous) => {
+        const updated = { ...previous };
+        keysForDay.forEach((key) => delete updated[key]);
+        return updated;
       });
 
       const { error: deleteError } = await supabase
@@ -160,10 +168,13 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
         void loadWeek(weekStartValue, weekEndValue);
       }
     } else {
-      // Select all slots for this day
-      setSelectedKeys((previous) => [...previous, ...keysForDay.filter((k) => !selectedSet.has(k))]);
-      keysForDay.forEach(() => {
-        // Removed group count logic
+      // Select all slots for this day as available
+      setSelectedKeys((previous) => {
+        const updated = { ...previous };
+        keysForDay.forEach((key) => {
+          updated[key] = "available";
+        });
+        return updated;
       });
 
       const upserts = TIME_BLOCKS.map((block) =>
@@ -172,7 +183,7 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
             user_id: userId,
             slot_date: date,
             time_block: block.value,
-            is_available: true,
+            status: "available",
           },
           {
             onConflict: "user_id,slot_date,time_block",
@@ -192,15 +203,16 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
 
   const toggleTimeBlock = async (timeBlock: TimeBlock) => {
     const keysForBlock = weekDays.map((day) => buildAvailabilityKey(day.date, timeBlock));
-    const allSelected = keysForBlock.every((key) => selectedSet.has(key));
+    const allSelected = keysForBlock.every((key) => selectedKeys[key] && selectedKeys[key] !== "unavailable");
 
     setError(null);
 
     if (allSelected) {
       // Deselect this time block for the entire week
-      setSelectedKeys((previous) => previous.filter((item) => !keysForBlock.includes(item)));
-      keysForBlock.forEach(() => {
-        // Removed group count logic
+      setSelectedKeys((previous) => {
+        const updated = { ...previous };
+        keysForBlock.forEach((key) => delete updated[key]);
+        return updated;
       });
 
       const { error: deleteError } = await supabase
@@ -216,10 +228,13 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
         void loadWeek(weekStartValue, weekEndValue);
       }
     } else {
-      // Select this time block for the entire week
-      setSelectedKeys((previous) => [...previous, ...keysForBlock.filter((k) => !selectedSet.has(k))]);
-      keysForBlock.forEach(() => {
-        // Removed group count logic
+      // Select this time block for the entire week as available
+      setSelectedKeys((previous) => {
+        const updated = { ...previous };
+        keysForBlock.forEach((key) => {
+          updated[key] = "available";
+        });
+        return updated;
       });
 
       const upserts = weekDays.map((day) =>
@@ -228,7 +243,7 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
             user_id: userId,
             slot_date: day.date,
             time_block: timeBlock,
-            is_available: true,
+            status: "available",
           },
           {
             onConflict: "user_id,slot_date,time_block",
@@ -291,7 +306,7 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
             <div className="px-4 py-4">Jour</div>
             {TIME_BLOCKS.map((block) => {
               const keysForBlock = weekDays.map((day) => buildAvailabilityKey(day.date, block.value));
-              const allSelected = keysForBlock.every((key) => selectedSet.has(key));
+              const allSelected = keysForBlock.every((key) => selectedKeys[key] && selectedKeys[key] !== "unavailable");
 
               return (
                 <button
@@ -309,7 +324,7 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
 
           {weekDays.map((day) => {
             const keysForDay = TIME_BLOCKS.map((block) => buildAvailabilityKey(day.date, block.value));
-            const allSelected = keysForDay.every((key) => selectedSet.has(key));
+            const allSelected = keysForDay.every((key) => selectedKeys[key] && selectedKeys[key] !== "unavailable");
 
             return (
               <div
@@ -332,7 +347,7 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
 
                 {TIME_BLOCKS.map((block) => {
                   const key = buildAvailabilityKey(day.date, block.value);
-                  const isActive = selectedSet.has(key);
+                  const status = selectedKeys[key];
                   const isSaving = savingKey === key;
 
                   return (
@@ -342,16 +357,20 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
                         onClick={() => toggleAvailability(day.date, block.value)}
                         disabled={isSaving}
                         className={`flex h-14 min-h-[56px] w-full flex-col items-center justify-center rounded-md border text-xs font-semibold transition sm:text-sm ${
-                          isActive
+                          status === "available"
                             ? "border-emerald-600 bg-emerald-600 text-white"
-                            : "border-zinc-200 bg-white text-zinc-500 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:border-emerald-500 dark:hover:bg-emerald-950 dark:hover:text-emerald-300"
+                            : status === "unsure"
+                              ? "border-amber-500 bg-amber-500 text-white"
+                              : "border-zinc-200 bg-white text-zinc-500 hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:border-emerald-500 dark:hover:bg-emerald-950 dark:hover:text-emerald-300"
                         } disabled:cursor-not-allowed disabled:opacity-70`}
                         aria-label={`${TIME_BLOCK_LABELS[block.value]} - ${day.longLabel}`}
                       >
                         {isSaving ? (
                           <LoaderCircle className="size-4 animate-spin" />
-                        ) : isActive ? (
+                        ) : status === "available" ? (
                           <Check className="size-5 sm:size-6" />
+                        ) : status === "unsure" ? (
+                          <span className="text-lg sm:text-xl">?</span>
                         ) : (
                           <X className="size-5 sm:size-6" />
                         )}

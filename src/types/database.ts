@@ -92,7 +92,7 @@ export type Database = {
         Row: {
           created_at: string;
           id: string;
-          is_available: boolean;
+          status: "available" | "unavailable" | "unsure";
           notes: string | null;
           slot_date: string;
           time_block: "morning" | "noon" | "evening";
@@ -102,7 +102,7 @@ export type Database = {
         Insert: {
           created_at?: string;
           id?: string;
-          is_available?: boolean;
+          status?: "available" | "unavailable" | "unsure";
           notes?: string | null;
           slot_date: string;
           time_block: "morning" | "noon" | "evening";
@@ -112,7 +112,7 @@ export type Database = {
         Update: {
           created_at?: string;
           id?: string;
-          is_available?: boolean;
+          status?: "available" | "unavailable" | "unsure";
           notes?: string | null;
           slot_date?: string;
           time_block?: "morning" | "noon" | "evening";
