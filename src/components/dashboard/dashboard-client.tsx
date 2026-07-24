@@ -89,9 +89,9 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
     const key = buildAvailabilityKey(date, timeBlock);
     const currentStatus = selectedKeys[key];
     
-    // Cycle through: unavailable -> available -> unsure -> unavailable
+    // Cycle through: undefined (unavailable) -> available -> unsure -> unavailable
     const nextStatus: "available" | "unsure" | "unavailable" = 
-      currentStatus === "unavailable" ? "available" :
+      !currentStatus ? "available" :
       currentStatus === "available" ? "unsure" : "unavailable";
 
     setSavingKey(key);
