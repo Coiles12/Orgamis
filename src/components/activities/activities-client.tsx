@@ -12,7 +12,9 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
   TRANSPORT_MODES,
   TRANSPORT_MODE_LABELS,
+  TIME_BLOCKS,
   type TransportMode,
+  type TimeBlock,
 } from "@/lib/constants";
 import { toDateTimeLocalValue } from "@/lib/date";
 import { ensureUserProfile } from "@/lib/profiles";
@@ -52,6 +54,7 @@ type ActivityFormState = {
   location: string;
   description: string;
   date: string;
+  time_block: TimeBlock | null;
 };
 
 type CarFormState = {
@@ -64,6 +67,7 @@ const initialActivityForm: ActivityFormState = {
   location: "",
   description: "",
   date: toDateTimeLocalValue(new Date()),
+  time_block: null,
 };
 
 export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClientProps) {
@@ -281,6 +285,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
       description: activityForm.description || null,
       location: activityForm.location || null,
       date: new Date(activityForm.date).toISOString(),
+      time_block: activityForm.time_block,
       status: "confirmed",
     });
 
@@ -553,6 +558,29 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
               required
               className="w-full rounded-md border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
             />
+          </label>
+
+          <label className="block">
+            <span className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              Moment de la journée
+            </span>
+            <select
+              value={activityForm.time_block || ""}
+              onChange={(event) =>
+                setActivityForm((previous) => ({
+                  ...previous,
+                  time_block: (event.target.value as TimeBlock) || null,
+                }))
+              }
+              className="w-full rounded-md border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
+            >
+              <option value="">Toute la journée</option>
+              {TIME_BLOCKS.map((block) => (
+                <option key={block.value} value={block.value}>
+                  {block.label}
+                </option>
+              ))}
+            </select>
           </label>
 
           <label className="block">

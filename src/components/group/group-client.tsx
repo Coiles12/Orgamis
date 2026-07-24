@@ -107,7 +107,6 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
       setGroupCounts(nextGroupCounts);
       setMemberCount(profilesResult.count ?? 0);
       setActivities(activitiesResult.data ?? []);
-      console.log('Loaded activities:', activitiesResult.data);
       setIsLoading(false);
     },
     [supabase, userId, userLabel],
