@@ -1,7 +1,6 @@
 "use client";
 
 import { Menu, X } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -27,14 +26,8 @@ export function AppHeader({ currentPath, userLabel }: AppHeaderProps) {
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
         <div className="flex items-center justify-between lg:justify-start">
           <div className="flex items-center gap-2">
-            <Link href="/dashboard" className="flex items-center gap-2">
-              <Image
-                src="/logo-orgamis.svg"
-                alt="Orgamis"
-                width={40}
-                height={40}
-                className="h-10 w-auto"
-              />
+            <Link href="/dashboard" className="text-xl font-semibold text-zinc-950 dark:text-zinc-50">
+              Orgamis
             </Link>
             <span className="text-sm text-zinc-500 dark:text-zinc-400">·</span>
             <p className="text-sm text-zinc-500 dark:text-zinc-400">{userLabel}</p>
