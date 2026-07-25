@@ -621,7 +621,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
         onClose={() => setIsCreateModalOpen(false)}
         title="Créer une activité"
       >
-        <form className="grid gap-4 md:grid-cols-2" onSubmit={handleCreateActivity}>
+        <form className="grid gap-4 grid-cols-1 md:grid-cols-2" onSubmit={handleCreateActivity}>
           <label className="block">
             <span className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
               Titre
@@ -709,7 +709,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
             />
           </label>
 
-          <label className="block col-span-2">
+          <label className="block md:col-span-2">
             <span className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
               Description
             </span>
@@ -727,11 +727,11 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
             />
           </label>
 
-          <div className="md:col-span-2">
+          <div className="md:col-span-2 col-span-1">
             <button
               type="submit"
               disabled={pendingAction === "create-activity"}
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full inline-flex items-center justify-center gap-2 rounded-md bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {pendingAction === "create-activity" ? (
                 <LoaderCircle className="size-4 animate-spin" />
