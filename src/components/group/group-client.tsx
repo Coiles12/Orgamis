@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CarFront, ChevronLeft, ChevronRight, Users } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -89,6 +89,7 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
   } | null>(null);
   const [loadingActivityDetails, setLoadingActivityDetails] = useState(false);
   const [transportSelection, setTransportSelection] = useState<TransportMode>("public_transport");
+  const [carForm, setCarForm] = useState({ vehicleLabel: "", seats: "3" });
 
   const weekParam = searchParams.get("week");
   const weekStart = useMemo(() => parseWeekStart(weekParam), [weekParam]);
@@ -491,26 +492,37 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
             <div className="text-sm text-zinc-500">Chargement...</div>
           ) : selectedActivity && activityDetails ? (
             <div className="space-y-6">
-              <div>
-                <h3 className="text-xl font-semibold text-zinc-950 dark:text-zinc-50">
-                  {selectedActivity.title}
-                </h3>
-                <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-                  Le {new Date(selectedActivity.date).toLocaleString("fr-FR")}
-                </p>
-                <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                  Créé par {activityDetails.creatorName}
-                </p>
-                {selectedActivity.location && (
-                  <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    📍 {selectedActivity.location}
+              <div className="rounded-md border border-zinc-200 p-4 dark:border-zinc-700 dark:bg-zinc-800">
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
+                    <h3 className="text-xl font-semibold text-zinc-950 dark:text-zinc-50">
+                      {selectedActivity.title}
+                    </h3>
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                      Le {new Date(selectedActivity.date).toLocaleString("fr-FR")}
+                    </p>
+                  </div>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
+                    {selectedActivity.location && (
+                      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                        📍 {selectedActivity.location}
+                      </p>
+                    )}
+                    <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                      {selectedActivity.time_block
+                        ? TIME_BLOCKS.find((b) => b.value === selectedActivity.time_block)?.label
+                        : "Non spécifié"}
+                    </p>
+                  </div>
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                    Créé par {activityDetails.creatorName}
                   </p>
-                )}
-                {selectedActivity.description && (
-                  <p className="mt-4 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                    {selectedActivity.description}
-                  </p>
-                )}
+                  {selectedActivity.description && (
+                    <p className="text-sm leading-6 text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap">
+                      {selectedActivity.description}
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="rounded-md border border-zinc-200 p-4 dark:border-zinc-700 dark:bg-zinc-800">
@@ -553,12 +565,86 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
                     Enregistrer
                   </button>
                 </div>
+
+                {transportSelection === "car_driver" && (
+                  <div className="mt-4 rounded-md bg-zinc-50 p-4 dark:bg-zinc-700">
+                    <div className="grid gap-3 sm:grid-cols-[1fr_140px_auto]">
+                      <input
+                        type="text"
+                        value={carForm.vehicleLabel}
+                        onChange={(e) => setCarForm((prev) => ({ ...prev, vehicleLabel: e.target.value }))}
+                        className="w-full rounded-md border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
+                        placeholder="Nom du véhicule"
+                      />
+                      <input
+                        type="number"
+                        min="1"
+                        value={carForm.seats}
+                        onChange={(e) => setCarForm((prev) => ({ ...prev, seats: e.target.value }))}
+                        className="w-full rounded-md border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
+                        placeholder="Places"
+                      />
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          const { error: participantError } = await supabase
+                            .from("activity_participants")
+                            .upsert(
+                              {
+                                activity_id: selectedActivity.id,
+                                user_id: userId,
+                                transport_mode: "car_driver",
+                              },
+                              { onConflict: "activity_id,user_id" },
+                            );
+                          if (participantError) return;
+
+                          const participation = activityDetails.currentParticipation;
+                          if (participation) {
+                            await supabase
+                              .from("carpools")
+                              .update({
+                                vehicle_label: carForm.vehicleLabel || null,
+                                seats_available: parseInt(carForm.seats),
+                              })
+                              .eq("id", participation.id);
+                          } else {
+                            const { data: newParticipation } = await supabase
+                              .from("activity_participants")
+                              .insert({
+                                activity_id: selectedActivity.id,
+                                user_id: userId,
+                                transport_mode: "car_driver",
+                              })
+                              .select()
+                              .single();
+                            if (newParticipation) {
+                              await supabase.from("carpools").insert({
+                                activity_id: selectedActivity.id,
+                                driver_participation_id: newParticipation.id,
+                                vehicle_label: carForm.vehicleLabel || null,
+                                seats_available: parseInt(carForm.seats),
+                              });
+                            }
+                          }
+                          await loadActivityDetails(selectedActivity.id);
+                        }}
+                        className="rounded-md bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+                      >
+                        Sauver la voiture
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="rounded-md border border-zinc-200 p-4 dark:border-zinc-700 dark:bg-zinc-800">
-                <h4 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">
-                  Covoiturage
-                </h4>
+                <div className="flex items-center gap-2">
+                  <CarFront className="size-5 text-emerald-600 dark:text-emerald-400" />
+                  <h4 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">
+                    Covoitise
+                  </h4>
+                </div>
                 <div className="mt-4 space-y-3">
                   {activityDetails.carpools.length === 0 && (
                     <div className="rounded-md bg-zinc-50 px-4 py-4 text-sm text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400">
@@ -622,6 +708,34 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
                             : "Réserver 1 place"}
                         </button>
                       </div>
+                      <div className="mt-4 flex items-center gap-2 text-sm text-zinc-600">
+                        <Users className="size-4" />
+                        {carpool.reservations.length === 0
+                          ? "Aucune réservation pour l'instant"
+                          : `${carpool.reservations.length} réservation(s)`}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-md border border-zinc-200 p-4 dark:border-zinc-800 dark:bg-zinc-800">
+                <h4 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">
+                  Participants et transports
+                </h4>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  {activityDetails.participants.length === 0 && (
+                    <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                      Aucun participant n&apos;a encore renseigné son transport.
+                    </span>
+                  )}
+                  {activityDetails.participants.map((participant) => (
+                    <div
+                      key={participant.id}
+                      className="rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                    >
+                      {participant.displayName} -{" "}
+                      {TRANSPORT_MODE_LABELS[participant.transport_mode]}
                     </div>
                   ))}
                 </div>

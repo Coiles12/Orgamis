@@ -104,7 +104,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
 
     const { data: activitiesData, error: activitiesError } = await supabase
       .from("activities")
-      .select("id, created_by, title, description, location, date, status")
+      .select("id, created_by, title, description, location, date, status, time_block")
       .order("date", { ascending: true });
 
     if (activitiesError) {
@@ -783,7 +783,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
                   Créé par {selectedActivityView.creatorName}
                 </p>
                 {selectedActivityView.activity.description && (
-                  <p className="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                  <p className="text-sm leading-6 text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap">
                     {selectedActivityView.activity.description}
                   </p>
                 )}
