@@ -757,35 +757,37 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
       >
         {selectedActivityView && (
           <div className="space-y-6">
-            <div className="space-y-4">
-              <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
-                <h3 className="text-xl font-semibold text-zinc-950 dark:text-zinc-50">
-                  {selectedActivityView.activity.title}
-                </h3>
-                <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                  Le {new Date(selectedActivityView.activity.date).toLocaleString("fr-FR")}
-                </p>
-              </div>
-              <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
-                {selectedActivityView.activity.location && (
-                  <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                    📍 {selectedActivityView.activity.location}
-                  </p>
-                )}
-                {selectedActivityView.activity.time_block && (
+            <div className="rounded-md border border-zinc-200 p-4 dark:border-zinc-700 dark:bg-zinc-800">
+              <div className="space-y-4">
+                <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
+                  <h3 className="text-xl font-semibold text-zinc-950 dark:text-zinc-50">
+                    {selectedActivityView.activity.title}
+                  </h3>
                   <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                    {TIME_BLOCKS.find((b) => b.value === selectedActivityView.activity.time_block)?.label}
+                    Le {new Date(selectedActivityView.activity.date).toLocaleString("fr-FR")}
+                  </p>
+                </div>
+                <div className="flex flex-col gap-2 sm:flex-row sm:justify-between">
+                  {selectedActivityView.activity.location && (
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                      📍 {selectedActivityView.activity.location}
+                    </p>
+                  )}
+                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                    {selectedActivityView.activity.time_block
+                      ? TIME_BLOCKS.find((b) => b.value === selectedActivityView.activity.time_block)?.label
+                      : "Non spécifié"}
+                  </p>
+                </div>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  Créé par {selectedActivityView.creatorName}
+                </p>
+                {selectedActivityView.activity.description && (
+                  <p className="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                    {selectedActivityView.activity.description}
                   </p>
                 )}
               </div>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                Créé par {selectedActivityView.creatorName}
-              </p>
-              {selectedActivityView.activity.description && (
-                <p className="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                  {selectedActivityView.activity.description}
-                </p>
-              )}
             </div>
 
             <div className="rounded-md border border-zinc-200 p-4 dark:border-zinc-700 dark:bg-zinc-800">
