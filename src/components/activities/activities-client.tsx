@@ -783,7 +783,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
                   Créé par {selectedActivityView.creatorName}
                 </p>
                 {selectedActivityView.activity.description && (
-                  <p className="text-sm leading-6 text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap">
+                  <p className="text-sm leading-6 text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap break-words">
                     {selectedActivityView.activity.description}
                   </p>
                 )}

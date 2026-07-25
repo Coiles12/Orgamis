@@ -28,7 +28,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
             <X className="size-5" />
           </button>
         </div>
-        <div className="mt-6">{children}</div>
+        <div className="mt-6 overflow-x-auto">{children}</div>
       </div>
     </div>
   );

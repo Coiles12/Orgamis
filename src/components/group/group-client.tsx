@@ -518,7 +518,7 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
                     Créé par {activityDetails.creatorName}
                   </p>
                   {selectedActivity.description && (
-                    <p className="text-sm leading-6 text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap">
+                    <p className="text-sm leading-6 text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap break-words">
                       {selectedActivity.description}
                     </p>
                   )}
