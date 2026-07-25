@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 
 import { AppHeader } from "@/components/layout/app-header";
 import { GroupClient } from "@/components/group/group-client";
@@ -14,11 +15,7 @@ export default async function GroupPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-zinc-50">
-        <p className="text-sm text-zinc-500">Non authentifié</p>
-      </main>
-    );
+    redirect("/");
   }
 
   const userLabel = user.email || "Utilisateur";
