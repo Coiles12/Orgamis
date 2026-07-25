@@ -17,6 +17,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Orgamis",
   description: "Application mobile-first pour organiser des sorties entre amis.",
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+  },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({

@@ -1,0 +1,17 @@
+{
+  "name": "Orgamis",
+  "short_name": "Orgamis",
+  "description": "Application mobile-first pour organiser des sorties entre amis.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
