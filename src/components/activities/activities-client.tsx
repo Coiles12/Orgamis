@@ -565,7 +565,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
               className="cursor-pointer rounded-md border border-zinc-200 bg-white p-5 shadow-lg shadow-zinc-950/5 transition hover:border-emerald-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/50 dark:hover:border-emerald-600 sm:p-6"
             >
               <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between gap-2 sm:justify-end sm:flex-col sm:items-end">
+                <div className="flex items-center justify-end gap-2">
                   <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
                     {activity.status === "confirmed" ? "Confirmée" : activity.status}
                   </div>
