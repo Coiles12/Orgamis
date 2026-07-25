@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 
+import { Modal } from "@/components/ui/modal";
 import {
   TRANSPORT_MODES,
   TRANSPORT_MODE_LABELS,
@@ -82,6 +83,8 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
     Record<string, TransportMode>
   >({});
   const [carForms, setCarForms] = useState<Record<string, CarFormState>>({});
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [selectedActivityView, setSelectedActivityView] = useState<ActivityView | null>(null);
 
   const sortedActivities = useMemo(
     () =>
@@ -309,6 +312,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
       ...initialActivityForm,
       date: toDateTimeLocalValue(new Date()),
     });
+    setIsCreateModalOpen(false);
     await loadActivities();
   };
 
@@ -529,9 +533,97 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
               réservations de places en voiture.
             </p>
           </div>
+          <button
+            type="button"
+            onClick={() => setIsCreateModalOpen(true)}
+            className="inline-flex items-center justify-center gap-2 rounded-md bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
+          >
+            <Plus className="size-4" />
+            Créer une activité
+          </button>
         </div>
+      </section>
 
-        <form className="mt-6 grid gap-4 md:grid-cols-2" onSubmit={handleCreateActivity}>
+      <section className="space-y-4">
+        {isLoading && (
+          <div className="rounded-md border border-zinc-200 bg-white px-5 py-4 text-sm text-zinc-500 shadow-lg shadow-zinc-950/5 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+            Chargement des activités...
+          </div>
+        )}
+
+        {!isLoading && sortedActivities.length === 0 && (
+          <div className="rounded-md border border-zinc-200 bg-white px-5 py-8 text-center text-sm text-zinc-500 shadow-lg shadow-zinc-950/5 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
+            Aucune activité pour le moment. Créez la première sortie du groupe.
+          </div>
+        )}
+
+        {sortedActivities.map((activityView) => {
+          const activity = activityView.activity;
+
+          return (
+            <article
+              key={activity.id}
+              onClick={() => setSelectedActivityView(activityView)}
+              className="cursor-pointer rounded-md border border-zinc-200 bg-white p-5 shadow-lg shadow-zinc-950/5 transition hover:border-emerald-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/50 dark:hover:border-emerald-600 sm:p-6"
+            >
+              <div className="flex flex-col gap-3">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <h2 className="text-xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
+                      {activity.title}
+                    </h2>
+                    <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
+                      <span>Le {new Date(activity.date).toLocaleString("fr-FR")}</span>
+                      <span>•</span>
+                      <span>Créé par {activityView.creatorName}</span>
+                    </div>
+                    {activity.location && (
+                      <div className="mt-2 flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+                        <MapPin className="size-4" />
+                        {activity.location}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
+                      {activity.status === "confirmed" ? "Confirmée" : activity.status}
+                    </div>
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          void deleteActivity(activity.id);
+                        }}
+                        disabled={pendingAction === `delete-${activity.id}`}
+                        className="inline-flex items-center justify-center gap-2 rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-900 dark:bg-red-950 dark:text-red-400 dark:hover:bg-red-900"
+                      >
+                        {pendingAction === `delete-${activity.id}` ? (
+                          <LoaderCircle className="size-3 animate-spin" />
+                        ) : (
+                          "Supprimer"
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </div>
+                {activity.description && (
+                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                    {activity.description}
+                  </p>
+                )}
+              </div>
+            </article>
+          );
+        })}
+      </section>
+
+      <Modal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        title="Créer une activité"
+      >
+        <form className="grid gap-4 md:grid-cols-2" onSubmit={handleCreateActivity}>
           <label className="block">
             <span className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
               Titre
@@ -658,272 +750,225 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
             {message}
           </div>
         )}
-      </section>
+      </Modal>
 
-      <section className="space-y-4">
-        {isLoading && (
-          <div className="rounded-md border border-zinc-200 bg-white px-5 py-4 text-sm text-zinc-500 shadow-lg shadow-zinc-950/5 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
-            Chargement des activités...
-          </div>
-        )}
+      <Modal
+        isOpen={selectedActivityView !== null}
+        onClose={() => setSelectedActivityView(null)}
+        title="Détails de l'activité"
+      >
+        {selectedActivityView && (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-xl font-semibold text-zinc-950 dark:text-zinc-50">
+                {selectedActivityView.activity.title}
+              </h3>
+              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
+                Le {new Date(selectedActivityView.activity.date).toLocaleString("fr-FR")}
+              </p>
+              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                Créé par {selectedActivityView.creatorName}
+              </p>
+              {selectedActivityView.activity.location && (
+                <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                  📍 {selectedActivityView.activity.location}
+                </p>
+              )}
+              {selectedActivityView.activity.description && (
+                <p className="mt-4 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                  {selectedActivityView.activity.description}
+                </p>
+              )}
+            </div>
 
-        {!isLoading && sortedActivities.length === 0 && (
-          <div className="rounded-md border border-zinc-200 bg-white px-5 py-8 text-center text-sm text-zinc-500 shadow-lg shadow-zinc-950/5 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
-            Aucune activité pour le moment. Créez la première sortie du groupe.
-          </div>
-        )}
-
-        {sortedActivities.map((activityView) => {
-          const activity = activityView.activity;
-          const transportValue =
-            transportSelections[activity.id] ?? "public_transport";
-          const currentUserIsDriver = transportValue === "car_driver";
-          const currentCarForm = carForms[activity.id] ?? {
-            vehicleLabel: "",
-            seats: "3",
-          };
-
-          return (
-            <article
-              key={activity.id}
-              className="rounded-md border border-zinc-200 bg-white p-5 shadow-lg shadow-zinc-950/5 dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/50 sm:p-6"
-            >
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div>
-                  <h2 className="text-2xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50">
-                    {activity.title}
-                  </h2>
-                  <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
-                    <span>Le {new Date(activity.date).toLocaleString("fr-FR")}</span>
-                    <span>•</span>
-                    <span>Créé par {activityView.creatorName}</span>
-                  </div>
-                  {activity.location && (
-                    <div className="mt-2 flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-                      <MapPin className="size-4" />
-                      {activity.location}
-                    </div>
-                  )}
-                  {activity.description && (
-                    <p className="mt-4 max-w-3xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                      {activity.description}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <div className="rounded-full bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
-                    {activity.status === "confirmed" ? "Confirmée" : activity.status}
-                  </div>
-                  {isAdmin && (
-                    <button
-                      type="button"
-                      onClick={() => void deleteActivity(activity.id)}
-                      disabled={pendingAction === `delete-${activity.id}`}
-                      className="inline-flex items-center justify-center gap-2 rounded-full border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-900 dark:bg-red-950 dark:text-red-400 dark:hover:bg-red-900"
-                    >
-                      {pendingAction === `delete-${activity.id}` ? (
-                        <LoaderCircle className="size-4 animate-spin" />
-                      ) : (
-                        "Supprimer"
-                      )}
-                    </button>
-                  )}
-                </div>
+            <div className="rounded-md border border-zinc-200 p-4 dark:border-zinc-700 dark:bg-zinc-800">
+              <h4 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">
+                Mon transport
+              </h4>
+              <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                <select
+                  value={transportSelections[selectedActivityView.activity.id] ?? "public_transport"}
+                  onChange={(event) =>
+                    setTransportSelections((previous) => ({
+                      ...previous,
+                      [selectedActivityView.activity.id]: event.target.value as TransportMode,
+                    }))
+                  }
+                  className="w-full rounded-md border border-zinc-200 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
+                >
+                  {TRANSPORT_MODES.map((mode) => (
+                    <option key={mode.value} value={mode.value}>
+                      {mode.label}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => void saveTransport(selectedActivityView)}
+                  disabled={pendingAction === `transport-${selectedActivityView.activity.id}`}
+                  className="rounded-md bg-zinc-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-700 dark:hover:bg-zinc-600"
+                >
+                  {pendingAction === `transport-${selectedActivityView.activity.id}`
+                    ? "Enregistrement..."
+                    : "Enregistrer"}
+                </button>
               </div>
 
-              <div className="mt-6 grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-                <div className="rounded-md border border-zinc-200 p-4 dark:border-zinc-800 dark:bg-zinc-800">
-                  <h3 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">
-                    Mon transport
-                  </h3>
-                  <div className="mt-4 flex flex-col gap-3 sm:flex-row">
-                    <select
-                      value={transportValue}
+              {transportSelections[selectedActivityView.activity.id] === "car_driver" && (
+                <div className="mt-4 rounded-md bg-zinc-50 p-4 dark:bg-zinc-700">
+                  <div className="grid gap-3 sm:grid-cols-[1fr_140px_auto]">
+                    <input
+                      type="text"
+                      value={carForms[selectedActivityView.activity.id]?.vehicleLabel ?? ""}
                       onChange={(event) =>
-                        setTransportSelections((previous) => ({
+                        setCarForms((previous) => ({
                           ...previous,
-                          [activity.id]: event.target.value as TransportMode,
+                          [selectedActivityView.activity.id]: {
+                            ...previous[selectedActivityView.activity.id],
+                            vehicleLabel: event.target.value,
+                          },
                         }))
                       }
-                      className="w-full rounded-md border border-zinc-200 px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
-                    >
-                      {TRANSPORT_MODES.map((mode) => (
-                        <option key={mode.value} value={mode.value}>
-                          {mode.label}
-                        </option>
-                      ))}
-                    </select>
+                      className="w-full rounded-md border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
+                      placeholder="Nom du véhicule"
+                    />
+                    <input
+                      type="number"
+                      min="1"
+                      value={carForms[selectedActivityView.activity.id]?.seats ?? "3"}
+                      onChange={(event) =>
+                        setCarForms((previous) => ({
+                          ...previous,
+                          [selectedActivityView.activity.id]: {
+                            ...previous[selectedActivityView.activity.id],
+                            seats: event.target.value,
+                          },
+                        }))
+                      }
+                      className="w-full rounded-md border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
+                      placeholder="Places"
+                    />
                     <button
                       type="button"
-                      onClick={() => void saveTransport(activityView)}
-                      disabled={pendingAction === `transport-${activity.id}`}
-                      className="rounded-md bg-zinc-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-700 dark:hover:bg-zinc-600"
+                      onClick={() => void saveCarpool(selectedActivityView)}
+                      disabled={pendingAction === `car-${selectedActivityView.activity.id}`}
+                      className="rounded-md bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-emerald-600 dark:hover:bg-emerald-500"
                     >
-                      {pendingAction === `transport-${activity.id}`
-                        ? "Enregistrement..."
-                        : "Enregistrer"}
+                      {pendingAction === `car-${selectedActivityView.activity.id}`
+                        ? "Sauvegarde..."
+                        : "Sauver la voiture"}
                     </button>
                   </div>
+                </div>
+              )}
+            </div>
 
-                  {currentUserIsDriver && (
-                    <div className="mt-4 rounded-md bg-zinc-50 p-4 dark:bg-zinc-700">
-                      <div className="grid gap-3 sm:grid-cols-[1fr_140px_auto]">
-                        <input
-                          type="text"
-                          value={currentCarForm.vehicleLabel}
-                          onChange={(event) =>
-                            setCarForms((previous) => ({
-                              ...previous,
-                              [activity.id]: {
-                                ...previous[activity.id],
-                                vehicleLabel: event.target.value,
-                              },
-                            }))
-                          }
-                          className="w-full rounded-md border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
-                          placeholder="Nom du véhicule"
-                        />
-                        <input
-                          type="number"
-                          min="1"
-                          value={currentCarForm.seats}
-                          onChange={(event) =>
-                            setCarForms((previous) => ({
-                              ...previous,
-                              [activity.id]: {
-                                ...previous[activity.id],
-                                seats: event.target.value,
-                              },
-                            }))
-                          }
-                          className="w-full rounded-md border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-50 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
-                          placeholder="Places"
-                        />
+            <div className="rounded-md border border-zinc-200 p-4 dark:border-zinc-700 dark:bg-zinc-800">
+              <div className="flex items-center gap-2">
+                <CarFront className="size-5 text-emerald-600 dark:text-emerald-400" />
+                <h4 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">
+                  Covoiturage
+                </h4>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                {selectedActivityView.carpools.length === 0 && (
+                  <div className="rounded-md bg-zinc-50 px-4 py-4 text-sm text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400">
+                    Aucune voiture proposée pour cette activité.
+                  </div>
+                )}
+
+                {selectedActivityView.carpools.map((carpool) => {
+                  const disableReservation =
+                    !carpool.currentUserReserved &&
+                    (carpool.seatsLeft === 0 ||
+                      selectedActivityView.currentParticipation?.id ===
+                        carpool.driver_participation_id);
+
+                  return (
+                    <div
+                      key={carpool.id}
+                      className="rounded-md border border-zinc-200 p-4 dark:border-zinc-700 dark:bg-zinc-700"
+                    >
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <p className="text-base font-semibold text-zinc-950 dark:text-zinc-50">
+                            {carpool.vehicle_label || "Voiture"}
+                          </p>
+                          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                            Conducteur : {carpool.driverName}
+                          </p>
+                          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                            {carpool.seatsLeft} place(s) restante(s) on {carpool.seats_available}
+                          </p>
+                        </div>
+
                         <button
                           type="button"
-                          onClick={() => void saveCarpool(activityView)}
-                          disabled={pendingAction === `car-${activity.id}`}
-                          className="rounded-md bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+                          onClick={() =>
+                            void toggleReservation(
+                              selectedActivityView,
+                              carpool.driver_participation_id,
+                              carpool.currentUserReserved,
+                            )
+                          }
+                          disabled={
+                            pendingAction ===
+                              `reserve-${carpool.driver_participation_id}` ||
+                            disableReservation
+                          }
+                          className={`rounded-md px-4 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                            carpool.currentUserReserved
+                              ? "bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-zinc-700 dark:hover:bg-zinc-600"
+                              : "bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+                          }`}
                         >
-                          {pendingAction === `car-${activity.id}`
-                            ? "Sauvegarde..."
-                            : "Sauver la voiture"}
+                          {pendingAction ===
+                          `reserve-${carpool.driver_participation_id}`
+                            ? "Traitement..."
+                            : carpool.currentUserReserved
+                              ? "Annuler ma réservation"
+                              : "Réserver 1 place"}
                         </button>
                       </div>
-                    </div>
-                  )}
-                </div>
 
-                <div className="rounded-md border border-zinc-200 p-4 dark:border-zinc-800 dark:bg-zinc-800">
-                  <div className="flex items-center gap-2">
-                    <CarFront className="size-5 text-emerald-600 dark:text-emerald-400" />
-                    <h3 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">
-                      Covoitise
-                    </h3>
-                  </div>
-
-                  <div className="mt-4 space-y-3">
-                    {activityView.carpools.length === 0 && (
-                      <div className="rounded-md bg-zinc-50 px-4 py-4 text-sm text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400">
-                        Aucune voiture proposée pour cette activité.
+                      <div className="mt-4 flex items-center gap-2 text-sm text-zinc-600">
+                        <Users className="size-4" />
+                        {carpool.reservations.length === 0
+                          ? "Aucune réservation pour l'instant"
+                          : `${carpool.reservations.length} réservation(s)`}
                       </div>
-                    )}
-
-                    {activityView.carpools.map((carpool) => {
-                      const disableReservation =
-                        !carpool.currentUserReserved &&
-                        (carpool.seatsLeft === 0 ||
-                          activityView.currentParticipation?.id ===
-                            carpool.driver_participation_id);
-
-                      return (
-                        <div
-                          key={carpool.id}
-                          className="rounded-md border border-zinc-200 p-4 dark:border-zinc-700 dark:bg-zinc-700"
-                        >
-                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                            <div>
-                              <p className="text-base font-semibold text-zinc-950 dark:text-zinc-50">
-                                {carpool.vehicle_label || "Voiture"}
-                              </p>
-                              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                                Conducteur : {carpool.driverName}
-                              </p>
-                              <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                                {carpool.seatsLeft} place(s) restante(s) sur{" "}
-                                {carpool.seats_available}
-                              </p>
-                            </div>
-
-                            <button
-                              type="button"
-                              onClick={() =>
-                                void toggleReservation(
-                                  activityView,
-                                  carpool.driver_participation_id,
-                                  carpool.currentUserReserved,
-                                )
-                              }
-                              disabled={
-                                pendingAction ===
-                                  `reserve-${carpool.driver_participation_id}` ||
-                                disableReservation
-                              }
-                              className={`rounded-md px-4 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
-                                carpool.currentUserReserved
-                                  ? "bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-zinc-700 dark:hover:bg-zinc-600"
-                                  : "bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500"
-                              }`}
-                            >
-                              {pendingAction ===
-                              `reserve-${carpool.driver_participation_id}`
-                                ? "Traitement..."
-                                : carpool.currentUserReserved
-                                  ? "Annuler ma réservation"
-                                  : "Réserver 1 place"}
-                            </button>
-                          </div>
-
-                          <div className="mt-4 flex items-center gap-2 text-sm text-zinc-600">
-                            <Users className="size-4" />
-                            {carpool.reservations.length === 0
-                              ? "Aucune réservation pour l'instant"
-                              : `${carpool.reservations.length} réservation(s) enregistrée(s)`}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 rounded-md border border-zinc-200 p-4 dark:border-zinc-800 dark:bg-zinc-800">
-                <h3 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">
-                  Participants et transports
-                </h3>
-                <div className="mt-4 flex flex-wrap gap-3">
-                  {activityView.participants.length === 0 && (
-                    <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                      Aucun participant n&apos;a encore renseigné son transport.
-                    </span>
-                  )}
-
-                  {activityView.participants.map((participant) => (
-                    <div
-                      key={participant.id}
-                      className="rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-                    >
-                      {participant.displayName} -{" "}
-                      {TRANSPORT_MODE_LABELS[participant.transport_mode]}
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
-            </article>
-          );
-        })}
-      </section>
+            </div>
+
+            <div className="rounded-md border border-zinc-200 p-4 dark:border-zinc-800 dark:bg-zinc-800">
+              <h4 className="text-lg font-semibold text-zinc-950 dark:text-zinc-50">
+                Participants et transports
+              </h4>
+              <div className="mt-4 flex flex-wrap gap-3">
+                {selectedActivityView.participants.length === 0 && (
+                  <span className="text-sm text-zinc-500 dark:text-zinc-400">
+                    Aucun participant n&apos;a encore renseigné son transport.
+                  </span>
+                )}
+
+                {selectedActivityView.participants.map((participant) => (
+                  <div
+                    key={participant.id}
+                    className="rounded-full border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                  >
+                    {participant.displayName} -{" "}
+                    {TRANSPORT_MODE_LABELS[participant.transport_mode]}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
