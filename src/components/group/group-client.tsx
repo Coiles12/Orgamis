@@ -587,7 +587,12 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
                       <button
                         type="button"
                         onClick={async () => {
-                          const { error: participantError } = await supabase
+                          const seatsValue = Number(carForm.seats);
+                          if (!Number.isFinite(seatsValue) || seatsValue < 1) {
+                            return;
+                          }
+
+                          const { data: participation, error: participationError } = await supabase
                             .from("activity_participants")
                             .upsert(
                               {
@@ -595,38 +600,30 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
                                 user_id: userId,
                                 transport_mode: "car_driver",
                               },
-                              { onConflict: "activity_id,user_id" },
-                            );
-                          if (participantError) return;
+                              {
+                                onConflict: "activity_id,user_id",
+                              },
+                            )
+                            .select("id")
+                            .single();
 
-                          const participation = activityDetails.currentParticipation;
-                          if (participation) {
-                            await supabase
-                              .from("carpools")
-                              .update({
-                                vehicle_label: carForm.vehicleLabel || null,
-                                seats_available: parseInt(carForm.seats),
-                              })
-                              .eq("id", participation.id);
-                          } else {
-                            const { data: newParticipation } = await supabase
-                              .from("activity_participants")
-                              .insert({
-                                activity_id: selectedActivity.id,
-                                user_id: userId,
-                                transport_mode: "car_driver",
-                              })
-                              .select()
-                              .single();
-                            if (newParticipation) {
-                              await supabase.from("carpools").insert({
-                                activity_id: selectedActivity.id,
-                                driver_participation_id: newParticipation.id,
-                                vehicle_label: carForm.vehicleLabel || null,
-                                seats_available: parseInt(carForm.seats),
-                              });
-                            }
+                          if (participationError || !participation) {
+                            return;
                           }
+
+                          await supabase.from("carpools").upsert(
+                            {
+                              activity_id: selectedActivity.id,
+                              driver_participation_id: participation.id,
+                              seats_available: seatsValue,
+                              vehicle_label: carForm.vehicleLabel || null,
+                            },
+                            {
+                              onConflict: "driver_participation_id",
+                            },
+                          );
+
+                          setTransportSelection("car_driver");
                           await loadActivityDetails(selectedActivity.id);
                         }}
                         className="rounded-md bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500"
@@ -651,71 +648,79 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
                       Aucune voiture proposée pour cette activité.
                     </div>
                   )}
-                  {activityDetails.carpools.map((carpool) => (
-                    <div
-                      key={carpool.id}
-                      className="rounded-md border border-zinc-200 p-4 dark:border-zinc-700 dark:bg-zinc-700"
-                    >
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                          <p className="text-base font-semibold text-zinc-950 dark:text-zinc-50">
-                            {carpool.vehicle_label || "Voiture"}
-                          </p>
-                          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                            Conducteur : {carpool.driverName}
-                          </p>
-                          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                            {carpool.seatsLeft} place(s) restante(s) sur {carpool.seats_available}
-                          </p>
+                  {activityDetails.carpools.map((carpool) => {
+                    const disableReservation =
+                      !carpool.currentUserReserved &&
+                      (carpool.seatsLeft === 0 ||
+                        activityDetails.currentParticipation?.id ===
+                          carpool.driver_participation_id);
+
+                    return (
+                      <div
+                        key={carpool.id}
+                        className="rounded-md border border-zinc-200 p-4 dark:border-zinc-700 dark:bg-zinc-700"
+                      >
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <p className="text-base font-semibold text-zinc-950 dark:text-zinc-50">
+                              {carpool.vehicle_label || "Voiture"}
+                            </p>
+                            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                              Conducteur : {carpool.driverName}
+                            </p>
+                            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                              {carpool.seatsLeft} place(s) restante(s) sur {carpool.seats_available}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              if (carpool.currentUserReserved) {
+                                await supabase
+                                  .from("car_seat_reservations")
+                                  .delete()
+                                  .eq("driver_participation_id", carpool.driver_participation_id)
+                                  .eq("passenger_user_id", userId);
+                              } else {
+                                await supabase
+                                  .from("activity_participants")
+                                  .upsert(
+                                    {
+                                      activity_id: selectedActivity.id,
+                                      user_id: userId,
+                                      transport_mode: "car_passenger",
+                                    },
+                                    { onConflict: "activity_id,user_id" },
+                                  );
+                                await supabase.from("car_seat_reservations").insert({
+                                  driver_participation_id: carpool.driver_participation_id,
+                                  passenger_user_id: userId,
+                                  seats_reserved: 1,
+                                });
+                              }
+                              await loadActivityDetails(selectedActivity.id);
+                            }}
+                            disabled={disableReservation}
+                            className={`rounded-md px-4 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                              carpool.currentUserReserved
+                                ? "bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-zinc-700 dark:hover:bg-zinc-600"
+                                : "bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+                            }`}
+                          >
+                            {carpool.currentUserReserved
+                              ? "Annuler ma réservation"
+                              : "Réserver 1 place"}
+                          </button>
                         </div>
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            if (carpool.currentUserReserved) {
-                              await supabase
-                                .from("car_seat_reservations")
-                                .delete()
-                                .eq("driver_participation_id", carpool.driver_participation_id)
-                                .eq("passenger_user_id", userId);
-                            } else {
-                              await supabase
-                                .from("activity_participants")
-                                .upsert(
-                                  {
-                                    activity_id: selectedActivity.id,
-                                    user_id: userId,
-                                    transport_mode: "car_passenger",
-                                  },
-                                  { onConflict: "activity_id,user_id" },
-                                );
-                              await supabase.from("car_seat_reservations").insert({
-                                driver_participation_id: carpool.driver_participation_id,
-                                passenger_user_id: userId,
-                                seats_reserved: 1,
-                              });
-                            }
-                            await loadActivityDetails(selectedActivity.id);
-                          }}
-                          disabled={carpool.seatsLeft === 0}
-                          className={`rounded-md px-4 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
-                            carpool.currentUserReserved
-                              ? "bg-zinc-950 text-white hover:bg-zinc-800 dark:bg-zinc-700 dark:hover:bg-zinc-600"
-                              : "bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500"
-                          }`}
-                        >
-                          {carpool.currentUserReserved
-                            ? "Annuler ma réservation"
-                            : "Réserver 1 place"}
-                        </button>
+                        <div className="mt-4 flex items-center gap-2 text-sm text-zinc-600">
+                          <Users className="size-4" />
+                          {carpool.reservations.length === 0
+                            ? "Aucune réservation pour l'instant"
+                            : `${carpool.reservations.length} réservation(s)`}
+                        </div>
                       </div>
-                      <div className="mt-4 flex items-center gap-2 text-sm text-zinc-600">
-                        <Users className="size-4" />
-                        {carpool.reservations.length === 0
-                          ? "Aucune réservation pour l'instant"
-                          : `${carpool.reservations.length} réservation(s)`}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
