@@ -21,19 +21,13 @@ export default async function SettingsPage() {
     );
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("display_name, is_admin")
-    .eq("id", user.id)
-    .single();
-
-  const userLabel = profile?.display_name || user.email || "Utilisateur";
+  const userLabel = user.email || "Utilisateur";
 
   return (
     <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <AppHeader currentPath="/settings" userLabel={userLabel} />
       <Suspense fallback={<PageLoader label="Chargement des paramètres..." />}>
-        <SettingsClient userId={user.id} isAdmin={profile?.is_admin ?? false} />
+        <SettingsClient userId={user.id} />
       </Suspense>
     </main>
   );

@@ -1,17 +1,17 @@
 "use client";
 
 import { Moon, Sun, Monitor, LoaderCircle, Trash2 } from "lucide-react";
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect } from "react";
 
 import { useTheme } from "@/lib/theme";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type SettingsClientProps = {
   userId: string;
-  isAdmin: boolean;
+  isAdmin?: boolean;
 };
 
-export function SettingsClient({ userId, isAdmin }: SettingsClientProps) {
+export function SettingsClient({ userId, isAdmin: initialIsAdmin }: SettingsClientProps) {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [supabase] = useState(() => createSupabaseBrowserClient());
   const [profiles, setProfiles] = useState<Array<{ id: string; display_name: string | null }>>([]);
@@ -24,6 +24,20 @@ export function SettingsClient({ userId, isAdmin }: SettingsClientProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const [deleteAccountMessage, setDeleteAccountMessage] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(initialIsAdmin ?? false);
+
+  useEffect(() => {
+    if (initialIsAdmin === undefined) {
+      supabase
+        .from("profiles")
+        .select("is_admin")
+        .eq("id", userId)
+        .single()
+        .then(({ data }) => {
+          setIsAdmin(data?.is_admin ?? false);
+        });
+    }
+  }, [initialIsAdmin, userId, supabase]);
 
   const loadProfiles = async () => {
     setIsLoadingProfiles(true);

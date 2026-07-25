@@ -21,13 +21,7 @@ export default async function DashboardPage() {
     );
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("display_name")
-    .eq("id", user.id)
-    .single();
-
-  const userLabel = profile?.display_name || user.email || "Utilisateur";
+  const userLabel = user.email || "Utilisateur";
 
   return (
     <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950">

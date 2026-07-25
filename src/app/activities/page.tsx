@@ -21,19 +21,13 @@ export default async function ActivitiesPage() {
     );
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("display_name, is_admin")
-    .eq("id", user.id)
-    .single();
-
-  const userLabel = profile?.display_name || user.email || "Utilisateur";
+  const userLabel = user.email || "Utilisateur";
 
   return (
     <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <AppHeader currentPath="/activities" userLabel={userLabel} />
       <Suspense fallback={<PageLoader label="Chargement des activités..." />}>
-        <ActivitiesClient userId={user.id} userLabel={userLabel} isAdmin={profile?.is_admin ?? false} />
+        <ActivitiesClient userId={user.id} userLabel={userLabel} />
       </Suspense>
     </main>
   );

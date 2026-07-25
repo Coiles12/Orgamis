@@ -47,7 +47,7 @@ type ActivityView = {
 type ActivitiesClientProps = {
   userId: string;
   userLabel: string;
-  isAdmin: boolean;
+  isAdmin?: boolean;
 };
 
 type ActivityFormState = {
@@ -71,13 +71,14 @@ const initialActivityForm: ActivityFormState = {
   time_blocks: [],
 };
 
-export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClientProps) {
+export function ActivitiesClient({ userId, userLabel, isAdmin: initialIsAdmin }: ActivitiesClientProps) {
   const [supabase] = useState(() => createSupabaseBrowserClient());
   const [activities, setActivities] = useState<ActivityView[]>([]);
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(initialIsAdmin ?? false);
   const [activityForm, setActivityForm] =
     useState<ActivityFormState>(initialActivityForm);
   const [transportSelections, setTransportSelections] = useState<
@@ -102,6 +103,16 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
     setMessage(null);
 
     await ensureUserProfile(supabase, userId, userLabel);
+
+    // Load isAdmin if not provided
+    if (initialIsAdmin === undefined) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("is_admin")
+        .eq("id", userId)
+        .single();
+      setIsAdmin(profile?.is_admin ?? false);
+    }
 
     const { data: activitiesData, error: activitiesError } = await supabase
       .from("activities")
