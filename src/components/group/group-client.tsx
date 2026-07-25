@@ -453,7 +453,12 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
               <div className="mt-4 text-sm text-zinc-500">Chargement...</div>
             ) : (
               <div className="mt-4 space-y-2">
-                {slotDetails.map((detail) => (
+                {slotDetails
+                  .sort((a, b) => {
+                    const statusOrder = { available: 0, unsure: 1, unavailable: 2 };
+                    return statusOrder[a.status] - statusOrder[b.status];
+                  })
+                  .map((detail) => (
                   <div
                     key={detail.user_id}
                     className="flex items-center justify-between rounded-md border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800"
