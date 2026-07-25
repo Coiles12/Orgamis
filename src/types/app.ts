@@ -22,6 +22,7 @@ export type ActivityRow = {
   location: string | null;
   date: string;
   status: "draft" | "confirmed" | "cancelled";
+  time_block: TimeBlock | null;
 };
 
 export type ActivityParticipantRow = {

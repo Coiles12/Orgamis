@@ -288,18 +288,16 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
       return;
     }
 
-    // Create one activity per selected time_block
-    const { error } = await supabase.from("activities").insert(
-      activityForm.time_blocks.map((time_block) => ({
-        created_by: userId,
-        title: activityForm.title,
-        description: activityForm.description || null,
-        location: activityForm.location || null,
-        date: new Date(activityForm.date).toISOString(),
-        time_block,
-        status: "confirmed",
-      }))
-    );
+    // Create one activity with the first selected time_block
+    const { error } = await supabase.from("activities").insert({
+      created_by: userId,
+      title: activityForm.title,
+      description: activityForm.description || null,
+      location: activityForm.location || null,
+      date: new Date(activityForm.date).toISOString(),
+      time_block: activityForm.time_blocks[0],
+      status: "confirmed",
+    });
 
     setPendingAction(null);
 
@@ -665,7 +663,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
             <span className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
               Moment de la journée
             </span>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-3 gap-2">
               {TIME_BLOCKS.map((block) => {
                 const isSelected = activityForm.time_blocks.includes(block.value);
                 return (
@@ -680,7 +678,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
                           : [...previous.time_blocks, block.value],
                       }));
                     }}
-                    className={`rounded-md px-4 py-2 text-sm font-semibold transition ${
+                    className={`w-full rounded-md px-4 py-3 text-sm font-semibold transition ${
                       isSelected
                         ? "bg-emerald-600 text-white hover:bg-emerald-700"
                         : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
@@ -711,7 +709,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
             />
           </label>
 
-          <label className="block md:row-span-2">
+          <label className="block md:col-span-2">
             <span className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
               Description
             </span>
@@ -723,7 +721,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
                   description: event.target.value,
                 }))
               }
-              rows={5}
+              rows={3}
               className="w-full rounded-md border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-50 dark:focus:border-emerald-500 dark:focus:ring-emerald-950"
               placeholder="Infos utiles pour le groupe"
             />
@@ -766,6 +764,11 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
               <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
                 Le {new Date(selectedActivityView.activity.date).toLocaleString("fr-FR")}
               </p>
+              {selectedActivityView.activity.time_block && (
+                <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+                  {TIME_BLOCKS.find((b) => b.value === selectedActivityView.activity.time_block)?.label}
+                </p>
+              )}
               <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
                 Créé par {selectedActivityView.creatorName}
               </p>

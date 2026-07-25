@@ -19,10 +19,11 @@ export function SettingsClient({ userId, isAdmin }: SettingsClientProps) {
   const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
   const [newDisplayName, setNewDisplayName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [profileMessage, setProfileMessage] = useState<string | null>(null);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
+  const [deleteAccountMessage, setDeleteAccountMessage] = useState<string | null>(null);
 
   const loadProfiles = async () => {
     setIsLoadingProfiles(true);
@@ -39,7 +40,7 @@ export function SettingsClient({ userId, isAdmin }: SettingsClientProps) {
     if (!editingProfileId) return;
 
     setIsSaving(true);
-    setMessage(null);
+    setProfileMessage(null);
 
     const { error } = await supabase
       .from("profiles")
@@ -49,19 +50,19 @@ export function SettingsClient({ userId, isAdmin }: SettingsClientProps) {
     setIsSaving(false);
 
     if (error) {
-      setMessage(error.message);
+      setProfileMessage(error.message);
       return;
     }
 
     setEditingProfileId(null);
     setNewDisplayName("");
-    setMessage("Pseudo mis à jour avec succès.");
+    setProfileMessage("Pseudo mis à jour avec succès.");
     await loadProfiles();
   };
 
   const handleDeleteAccount = async () => {
     setIsDeletingAccount(true);
-    setMessage(null);
+    setDeleteAccountMessage(null);
 
     // Delete user's profile
     const { error: profileError } = await supabase
@@ -71,7 +72,7 @@ export function SettingsClient({ userId, isAdmin }: SettingsClientProps) {
 
     if (profileError) {
       setIsDeletingAccount(false);
-      setMessage(profileError.message);
+      setDeleteAccountMessage(profileError.message);
       return;
     }
 
@@ -84,7 +85,7 @@ export function SettingsClient({ userId, isAdmin }: SettingsClientProps) {
 
     if (!response.ok) {
       setIsDeletingAccount(false);
-      setMessage("Erreur lors de la suppression du compte.");
+      setDeleteAccountMessage("Erreur lors de la suppression du compte.");
       return;
     }
 
@@ -95,7 +96,7 @@ export function SettingsClient({ userId, isAdmin }: SettingsClientProps) {
 
   const handleDeleteUserAccount = async (targetUserId: string) => {
     setDeletingUserId(targetUserId);
-    setMessage(null);
+    setProfileMessage(null);
 
     // Delete user's profile
     const { error: profileError } = await supabase
@@ -105,7 +106,7 @@ export function SettingsClient({ userId, isAdmin }: SettingsClientProps) {
 
     if (profileError) {
       setDeletingUserId(null);
-      setMessage(profileError.message);
+      setProfileMessage(profileError.message);
       return;
     }
 
@@ -118,12 +119,12 @@ export function SettingsClient({ userId, isAdmin }: SettingsClientProps) {
 
     if (!response.ok) {
       setDeletingUserId(null);
-      setMessage("Erreur lors de la suppression du compte.");
+      setProfileMessage("Erreur lors de la suppression du compte.");
       return;
     }
 
     setDeletingUserId(null);
-    setMessage("Compte supprimé avec succès.");
+    setProfileMessage("Compte supprimé avec succès.");
     await loadProfiles();
   };
 
@@ -214,9 +215,9 @@ export function SettingsClient({ userId, isAdmin }: SettingsClientProps) {
           </p>
         </div>
 
-        {message && (
+        {deleteAccountMessage && (
           <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
-            {message}
+            {deleteAccountMessage}
           </div>
         )}
 
@@ -274,9 +275,9 @@ export function SettingsClient({ userId, isAdmin }: SettingsClientProps) {
             </p>
           </div>
 
-          {message && (
+          {profileMessage && (
             <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-200">
-              {message}
+              {profileMessage}
             </div>
           )}
 
