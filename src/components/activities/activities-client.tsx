@@ -565,24 +565,6 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
               className="cursor-pointer rounded-md border border-zinc-200 bg-white p-5 shadow-lg shadow-zinc-950/5 transition hover:border-emerald-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/50 dark:hover:border-emerald-600 sm:p-6"
             >
               <div className="flex flex-col gap-3">
-                <div className="flex flex-col gap-3">
-                  <div className="flex-1 min-w-0">
-                    <h2 className="text-xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50 truncate">
-                      {activity.title}
-                    </h2>
-                    <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
-                      <span>Le {new Date(activity.date).toLocaleString("fr-FR")}</span>
-                      <span>•</span>
-                      <span>Créé par {activityView.creatorName}</span>
-                    </div>
-                    {activity.location && (
-                      <div className="mt-2 flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-                        <MapPin className="size-4" />
-                        {activity.location}
-                      </div>
-                    )}
-                  </div>
-                </div>
                 <div className="flex items-center justify-between gap-2 sm:justify-end sm:flex-col sm:items-end">
                   <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
                     {activity.status === "confirmed" ? "Confirmée" : activity.status}
@@ -604,6 +586,24 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
                       )}
                     </button>
                   )}
+                </div>
+                <div className="flex flex-col gap-3">
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-xl font-semibold tracking-tight text-zinc-950 dark:text-zinc-50 truncate">
+                      {activity.title}
+                    </h2>
+                    <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-zinc-500 dark:text-zinc-400">
+                      <span>Le {new Date(activity.date).toLocaleString("fr-FR")}</span>
+                      <span>•</span>
+                      <span>Créé par {activityView.creatorName}</span>
+                    </div>
+                    {activity.location && (
+                      <div className="mt-2 flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+                        <MapPin className="size-4" />
+                        {activity.location}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 {activity.description && (
                   <p className="mt-2 line-clamp-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
