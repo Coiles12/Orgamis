@@ -90,9 +90,13 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
   const [loadingActivityDetails, setLoadingActivityDetails] = useState(false);
   const [transportSelection, setTransportSelection] = useState<TransportMode>("public_transport");
   const [carForm, setCarForm] = useState({ vehicleLabel: "", seats: "3" });
+  const [currentWeekStart, setCurrentWeekStart] = useState<Date | null>(null);
 
   const weekParam = searchParams.get("week");
-  const weekStart = useMemo(() => parseWeekStart(weekParam), [weekParam]);
+  const weekStart = useMemo(() => {
+    if (currentWeekStart) return currentWeekStart;
+    return parseWeekStart(weekParam);
+  }, [weekParam, currentWeekStart]);
   const weekStartValue = useMemo(() => toDateInputValue(weekStart), [weekStart]);
   const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart]);
   const weekEndValue = weekDays[6]?.date ?? weekStartValue;
@@ -298,12 +302,12 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
   const navigateWeek = useCallback(
     (direction: number) => {
       const newWeekStart = shiftWeek(weekStart, direction);
+      setCurrentWeekStart(newWeekStart);
       const newWeekParam = toDateInputValue(newWeekStart);
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("week", newWeekParam);
-      router.push(`/group?${params.toString()}`);
+      // Update URL without full navigation using shallow routing
+      window.history.pushState({}, '', `/group?week=${newWeekParam}`);
     },
-    [weekStart, searchParams, router],
+    [weekStart],
   );
 
   useEffect(() => {

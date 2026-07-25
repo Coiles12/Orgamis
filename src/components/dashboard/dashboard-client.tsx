@@ -36,9 +36,13 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [currentWeekStart, setCurrentWeekStart] = useState<Date | null>(null);
 
   const weekParam = searchParams.get("week");
-  const weekStart = useMemo(() => parseWeekStart(weekParam), [weekParam]);
+  const weekStart = useMemo(() => {
+    if (currentWeekStart) return currentWeekStart;
+    return parseWeekStart(weekParam);
+  }, [weekParam, currentWeekStart]);
   const weekStartValue = useMemo(() => toDateInputValue(weekStart), [weekStart]);
   const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart]);
   const weekEndValue = weekDays[6]?.date ?? weekStartValue;
@@ -81,8 +85,10 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
   }, [weekEndValue, weekStartValue, loadWeek]);
 
   const navigateWeek = (offset: number) => {
-    const nextWeekStart = toDateInputValue(shiftWeek(weekStart, offset));
-    router.push(`/dashboard?week=${nextWeekStart}`);
+    const nextWeekStart = shiftWeek(weekStart, offset);
+    setCurrentWeekStart(nextWeekStart);
+    // Update URL without full navigation using shallow routing
+    window.history.pushState({}, '', `/dashboard?week=${toDateInputValue(nextWeekStart)}`);
   };
 
   const toggleAvailability = async (date: string, timeBlock: TimeBlock) => {
@@ -139,7 +145,12 @@ export function DashboardClient({ userId, userLabel }: DashboardClientProps) {
 
     if (upsertError) {
       setError(upsertError.message);
-      void loadWeek(weekStartValue, weekEndValue);
+      // Revert optimistic update on error
+      setSelectedKeys((previous) => {
+        const updated = { ...previous };
+        delete updated[key];
+        return updated;
+      });
     }
   };
 

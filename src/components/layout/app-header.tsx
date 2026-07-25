@@ -54,6 +54,7 @@ export function AppHeader({ currentPath, userLabel }: AppHeaderProps) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={true}
                   onClick={() => setMobileMenuOpen(false)}
                   className={`rounded-md px-4 py-2 text-sm font-semibold transition ${
                     isActive
