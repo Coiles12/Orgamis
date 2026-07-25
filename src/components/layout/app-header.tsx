@@ -2,9 +2,10 @@
 
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { SignOutButton } from "@/components/layout/sign-out-button";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type AppHeaderProps = {
   currentPath: "/dashboard" | "/activities" | "/settings" | "/group";
@@ -20,6 +21,25 @@ const navigation = [
 
 export function AppHeader({ currentPath, userLabel }: AppHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [displayName, setDisplayName] = useState<string | null>(null);
+  const supabase = createSupabaseBrowserClient();
+
+  useEffect(() => {
+    const loadDisplayName = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("id", user.id)
+          .single();
+        setDisplayName(profile?.display_name || null);
+      }
+    };
+    void loadDisplayName();
+  }, [supabase]);
+
+  const displayLabel = displayName || userLabel;
 
   return (
     <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/90 backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/90">
@@ -30,7 +50,7 @@ export function AppHeader({ currentPath, userLabel }: AppHeaderProps) {
               Orgamis
             </Link>
             <span className="text-sm text-zinc-500 dark:text-zinc-400">·</span>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">{userLabel}</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">{displayLabel}</p>
           </div>
           <button
             type="button"
