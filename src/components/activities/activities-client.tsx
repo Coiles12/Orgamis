@@ -74,6 +74,7 @@ const initialActivityForm: ActivityFormState = {
 export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClientProps) {
   const [supabase] = useState(() => createSupabaseBrowserClient());
   const [activities, setActivities] = useState<ActivityView[]>([]);
+  const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -270,6 +271,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
     setActivities(nextActivities);
     setTransportSelections(nextTransportSelections);
     setCarForms(nextCarForms);
+    setProfiles(profiles);
     setIsLoading(false);
   }, [supabase, userLabel, userId]);
 
@@ -431,6 +433,17 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
       [activityId]: "car_driver",
     }));
     await loadActivities();
+    
+    // Update selectedActivityView to reflect the new car
+    setActivities((previousActivities) => {
+      const updatedActivityView = previousActivities.find(
+        (av) => av.activity.id === activityId
+      );
+      if (updatedActivityView && selectedActivityView?.activity.id === activityId) {
+        setSelectedActivityView(updatedActivityView);
+      }
+      return previousActivities;
+    });
   };
 
   const toggleReservation = async (
@@ -945,7 +958,19 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
                         <Users className="size-4" />
                         {carpool.reservations.length === 0
                           ? "Aucune réservation pour l'instant"
-                          : `${carpool.reservations.length} réservation(s)`}
+                          : (
+                            <div className="flex flex-wrap gap-2">
+                              <span>{carpool.reservations.length} réservation(s) :</span>
+                              {carpool.reservations.map((reservation) => {
+                                const passengerProfile = profiles.find(p => p.id === reservation.passenger_user_id);
+                                return (
+                                  <span key={reservation.id} className="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">
+                                    {passengerProfile?.display_name || "Passager"}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          )}
                       </div>
                     </div>
                   );
