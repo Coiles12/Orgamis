@@ -5,6 +5,8 @@ import { GroupClient } from "@/components/group/group-client";
 import { PageLoader } from "@/components/ui/page-loader";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+export const revalidate = 0;
+
 export default async function GroupPage() {
   const supabase = await createSupabaseServerClient();
   const {

@@ -5,6 +5,8 @@ import { DashboardClient } from "@/components/dashboard/dashboard-client";
 import { PageLoader } from "@/components/ui/page-loader";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+export const revalidate = 0;
+
 export default async function DashboardPage() {
   const supabase = await createSupabaseServerClient();
   const {

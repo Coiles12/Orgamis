@@ -1,6 +1,11 @@
+import { Suspense } from "react";
+
 import { ActivitiesClient } from "@/components/activities/activities-client";
 import { AppHeader } from "@/components/layout/app-header";
+import { PageLoader } from "@/components/ui/page-loader";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+export const revalidate = 0;
 
 export default async function ActivitiesPage() {
   const supabase = await createSupabaseServerClient();
@@ -27,7 +32,9 @@ export default async function ActivitiesPage() {
   return (
     <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <AppHeader currentPath="/activities" userLabel={userLabel} />
-      <ActivitiesClient userId={user.id} userLabel={userLabel} isAdmin={profile?.is_admin ?? false} />
+      <Suspense fallback={<PageLoader label="Chargement des activités..." />}>
+        <ActivitiesClient userId={user.id} userLabel={userLabel} isAdmin={profile?.is_admin ?? false} />
+      </Suspense>
     </main>
   );
 }

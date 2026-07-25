@@ -1,6 +1,11 @@
+import { Suspense } from "react";
+
 import { SettingsClient } from "@/components/settings/settings-client";
 import { AppHeader } from "@/components/layout/app-header";
+import { PageLoader } from "@/components/ui/page-loader";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+export const revalidate = 0;
 
 export default async function SettingsPage() {
   const supabase = await createSupabaseServerClient();
@@ -27,7 +32,9 @@ export default async function SettingsPage() {
   return (
     <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       <AppHeader currentPath="/settings" userLabel={userLabel} />
-      <SettingsClient userId={user.id} isAdmin={profile?.is_admin ?? false} />
+      <Suspense fallback={<PageLoader label="Chargement des paramètres..." />}>
+        <SettingsClient userId={user.id} isAdmin={profile?.is_admin ?? false} />
+      </Suspense>
     </main>
   );
 }
