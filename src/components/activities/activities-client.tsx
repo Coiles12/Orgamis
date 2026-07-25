@@ -663,7 +663,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
             <span className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
               Moment de la journée
             </span>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               {TIME_BLOCKS.map((block) => {
                 const isSelected = activityForm.time_blocks.includes(block.value);
                 return (
