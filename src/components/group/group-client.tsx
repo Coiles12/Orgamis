@@ -414,7 +414,7 @@ export function GroupClient({ userId, userLabel }: GroupClientProps) {
                             key={activity.id}
                             type="button"
                             onClick={() => loadActivityDetails(activity.id)}
-                            className="w-full rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-900 transition hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-100 dark:hover:bg-blue-800"
+                            className="w-full truncate rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-900 transition hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-100 dark:hover:bg-blue-800"
                             title={activity.location || undefined}
                           >
                             {activity.title}

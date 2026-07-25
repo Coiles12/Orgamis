@@ -518,7 +518,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
       <section className="rounded-md border border-zinc-200 bg-white p-5 shadow-lg shadow-zinc-950/5 dark:border-zinc-800 dark:bg-zinc-900 dark:shadow-zinc-950/50 sm:p-6">
-        <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
               Planifier une sortie
@@ -534,7 +534,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
           <button
             type="button"
             onClick={() => setIsCreateModalOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-md bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
+            className="inline-flex items-center justify-center gap-2 rounded-md bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 sm:self-start"
           >
             <Plus className="size-4" />
             Créer une activité
@@ -582,7 +582,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-shrink-0 flex-col gap-2">
                     <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400">
                       {activity.status === "confirmed" ? "Confirmée" : activity.status}
                     </div>
@@ -709,7 +709,7 @@ export function ActivitiesClient({ userId, userLabel, isAdmin }: ActivitiesClien
             />
           </label>
 
-          <label className="block md:col-span-2">
+          <label className="block col-span-2">
             <span className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
               Description
             </span>
